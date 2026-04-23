@@ -6,7 +6,7 @@ import {
   UserPlus, Mail, Phone, Shield, MoreHorizontal, 
   CheckCircle2, X, Plus, Search, Filter, Trash2,
   Lock, Globe, ShieldCheck, MailPlus, User, Clock,
-  Check, ShieldAlert
+  Check, ShieldAlert, Briefcase
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { supabase } from '@/lib/supabase';
