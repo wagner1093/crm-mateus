@@ -21,7 +21,8 @@ function MemberModal({ isOpen, onClose, onSuccess }: { isOpen: boolean; onClose:
     email: '',
     role: 'Vendedor',
     permissions: 'Acesso Padrão',
-    status: 'Offline'
+    status: 'Offline',
+    access_level: 'user'
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
