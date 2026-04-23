@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { 
   User, Building2, Bell, Shield, Smartphone, Globe, 
-  Save, Check, AlertCircle, Terminal, Cpu, Database
+  Save, Check, AlertCircle, Terminal, Cpu, Database, CheckCircle2
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { toast } from 'react-hot-toast';
