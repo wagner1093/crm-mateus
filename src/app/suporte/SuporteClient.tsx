@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { 
   LifeBuoy, Search, Filter, Plus, MessageCircle, 
   Clock, CheckCircle2, AlertCircle, User, ArrowRight,
-  MoreHorizontal, Phone, Mail
+  MoreHorizontal, Phone, Mail, ChevronRight
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
