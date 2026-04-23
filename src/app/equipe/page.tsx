@@ -45,7 +45,7 @@ function MemberModal({ isOpen, onClose, onSuccess }: { isOpen: boolean; onClose:
       toast.success('Membro convidado com sucesso!');
       onSuccess();
       onClose();
-      setFormData({ name: '', email: '', role: 'Vendedor', permissions: 'Acesso Padrão', status: 'Offline' });
+      setFormData({ name: '', email: '', role: 'Vendedor', permissions: 'Acesso Padrão', status: 'Offline', access_level: 'user' });
     } catch (err) {
       console.error('Error inviting member:', err);
       toast.error('Erro ao convidar membro.');
