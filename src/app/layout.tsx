@@ -1,14 +1,23 @@
 import type { Metadata } from "next";
-import { Inter, Montserrat } from "next/font/google";
+import { Plus_Jakarta_Sans, DM_Mono } from "next/font/google";
 import "./globals.css";
 import { Sidebar } from "@/components/Sidebar";
 import { Toaster } from "react-hot-toast";
 
-const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
-const montserrat = Montserrat({ subsets: ["latin"], variable: "--font-heading", weight: ["500", "600", "700", "800", "900"] });
+const jakarta = Plus_Jakarta_Sans({ 
+  subsets: ["latin"], 
+  variable: "--font-sans",
+  weight: ["300", "400", "500", "600", "700", "800"]
+});
+
+const dmMono = DM_Mono({ 
+  subsets: ["latin"], 
+  variable: "--font-mono",
+  weight: ["400", "500"]
+});
 
 export const metadata: Metadata = {
-  title: "CRM MATEUS | Premium Management",
+  title: "CRM Mateus",
   description: "Modern CRM for High Performance Teams",
 };
 
@@ -19,16 +28,27 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="pt-BR">
-      <body className={`${inter.variable} ${montserrat.variable} font-sans antialiased bg-gray-50 min-h-screen selection:bg-blue-500/30`}>
+      <body className={`${jakarta.variable} ${dmMono.variable} font-sans antialiased bg-[#F7F7F8] min-h-screen selection:bg-blue-100`}>
         <Sidebar />
-        <main className="pl-24 min-h-screen transition-all duration-300">
-          <div className="p-6 md:p-10">
-            <div className="max-w-[1700px] mx-auto bg-white rounded-[3rem] p-10 border border-gray-100 shadow-sm min-h-[calc(100vh-80px)]">
+        <main className="pl-[78px] min-h-screen transition-all duration-300">
+          <div className="p-5 md:p-7">
+            <div className="max-w-[1600px] mx-auto bg-white rounded-2xl p-7 border border-gray-100/80 shadow-[0_1px_3px_rgba(0,0,0,0.04),0_1px_2px_rgba(0,0,0,0.03)] min-h-[calc(100vh-56px)]">
               {children}
             </div>
           </div>
         </main>
-        <Toaster position="top-right" />
+        <Toaster 
+          position="top-right"
+          toastOptions={{
+            style: {
+              borderRadius: '10px',
+              fontSize: '13px',
+              fontWeight: '500',
+              padding: '10px 14px',
+              boxShadow: '0 4px 16px rgba(0,0,0,0.08)'
+            }
+          }}
+        />
       </body>
     </html>
   );

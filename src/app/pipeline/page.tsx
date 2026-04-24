@@ -6,6 +6,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Plus, LayoutGrid, AlignJustify, SlidersHorizontal, Pencil, Trash2, X, Check, Phone, FileText, DollarSign, User, Flame, Zap, Snowflake, PenLine, Mail, AlignLeft, Bell, Calendar, CreditCard, AlertTriangle, MessageSquare, Save, Briefcase, Globe } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { LeadModal } from '@/components/LeadModal';
+import { ConfirmModal } from '@/components/ConfirmModal';
 import { supabase } from '@/lib/supabase';
 import {
   DndContext, DragEndEvent, DragOverEvent, DragStartEvent,
@@ -562,6 +563,7 @@ export default function PipelinePage() {
   const [loading, setLoading] = useState(true);
   const [mounted, setMounted] = useState(false);
   const [isLeadModalOpen, setIsLeadModalOpen] = useState(false);
+  const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
   const [editingLead, setEditingLead] = useState<Lead | null>(null);
   const [availableServices, setAvailableServices] = useState<string[]>(SERVICE_OPTIONS_STATIC);
   const [activeId, setActiveId] = useState<string | null>(null);
@@ -636,8 +638,11 @@ export default function PipelinePage() {
     } catch { toast.error('Erro ao salvar.'); fetchLeads(); }
   };
 
-  const handleDelete = async (id: string) => {
-    if (!confirm('Deseja excluir este lead?')) return;
+  const handleDelete = (id: string) => {
+    setDeleteConfirmId(id);
+  };
+
+  const performDelete = async (id: string) => {
     setLeads(prev => prev.filter(l => l.id !== id));
     try {
       const { error } = await supabase.from('crmmateus_leads').delete().eq('id', id);
@@ -703,6 +708,16 @@ export default function PipelinePage() {
       {/* ── Modals ── */}
       <LeadModal isOpen={isLeadModalOpen} onClose={() => setIsLeadModalOpen(false)} onSuccess={fetchLeads} />
       {editingLead && <EditModal lead={editingLead} availableServices={availableServices} onClose={() => setEditingLead(null)} onSave={handleSaveEdit} />}
+      
+      <ConfirmModal 
+        isOpen={!!deleteConfirmId}
+        onClose={() => setDeleteConfirmId(null)}
+        onConfirm={() => deleteConfirmId && performDelete(deleteConfirmId)}
+        title="Excluir Lead"
+        message="Tem certeza que deseja excluir este lead? Esta ação não poderá ser desfeita e todos os dados associados serão perdidos."
+        confirmText="Excluir Lead"
+        variant="danger"
+      />
     </div>
   );
 }

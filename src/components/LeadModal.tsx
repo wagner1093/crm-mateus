@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, UserPlus, Plus, User, Briefcase, Mail, Phone, DollarSign, MessageSquare, Save } from 'lucide-react';
+import { X, UserPlus, Plus, User, Briefcase, Mail, Phone, DollarSign, MessageSquare, Save, Snowflake, Thermometer, Flame } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { toast } from 'react-hot-toast';
 
@@ -102,16 +102,24 @@ export function LeadModal({ isOpen, onClose, onSuccess }: LeadModalProps) {
 
   const lbl = "text-[10px] font-bold uppercase tracking-widest text-gray-500 mb-3 block ml-1";
   const inI = "w-full px-5 py-4 rounded-2xl bg-[#F8F9FA] border border-transparent text-sm font-medium text-gray-900 focus:ring-2 focus:ring-[#007AFF]/10 focus:border-[#007AFF]/20 focus:bg-white outline-none transition-all placeholder:text-gray-400";
-  const chipBtn = (active: boolean) => `px-5 py-3 rounded-2xl text-[12px] font-bold border transition-all ${active ? 'bg-white border-orange-200 text-orange-600 shadow-sm' : 'bg-white border-gray-100 text-gray-500 hover:border-gray-200'}`;
-  const tempBtn = (t: string, active: boolean) => {
-    if (!active) return "px-8 py-3 rounded-2xl text-[12px] font-bold bg-white border border-gray-100 text-gray-500 hover:border-gray-200 transition-all";
-    const colors: any = {
-      'Frio': 'bg-blue-50 border-blue-200 text-blue-600',
-      'Morno': 'bg-orange-50 border-orange-200 text-orange-600',
-      'Quente': 'bg-red-50 border-red-200 text-red-600'
-    };
-    return `px-8 py-3 rounded-2xl text-[12px] font-bold border shadow-sm transition-all ${colors[t]}`;
+  
+  const serviceColors: Record<string, { bg: string, border: string, text: string }> = {
+    'Tráfego Pago': { bg: 'bg-blue-50', border: 'border-blue-200', text: 'text-blue-600' },
+    'Social Mídia': { bg: 'bg-pink-50', border: 'border-pink-200', text: 'text-pink-600' },
+    'Criação de Site': { bg: 'bg-emerald-50', border: 'border-emerald-200', text: 'text-emerald-600' },
+    'Criação de Sistema': { bg: 'bg-violet-50', border: 'border-violet-200', text: 'text-violet-600' },
+    'Hospedagem': { bg: 'bg-sky-50', border: 'border-sky-200', text: 'text-sky-600' },
   };
+
+  const chipBtn = (s: string, active: boolean) => {
+    const color = serviceColors[s] || { bg: 'bg-gray-50', border: 'border-gray-200', text: 'text-gray-600' };
+    return `px-5 py-3 rounded-2xl text-[12px] font-bold border transition-all ${
+      active 
+        ? `${color.bg} ${color.border} ${color.text} shadow-sm` 
+        : 'bg-white border-gray-100 text-gray-500 hover:border-gray-200'
+    }`;
+  };
+
 
   return createPortal(
     <AnimatePresence>
@@ -199,7 +207,7 @@ export function LeadModal({ isOpen, onClose, onSuccess }: LeadModalProps) {
                           const next = current.includes(s) ? current.filter(x => x !== s) : [...current, s];
                           setFormData({...formData, servico_interesse: next});
                         }}
-                        className={chipBtn(formData.servico_interesse.includes(s))}
+                        className={chipBtn(s, formData.servico_interesse.includes(s))}
                       >
                         {s}
                       </button>
@@ -207,25 +215,8 @@ export function LeadModal({ isOpen, onClose, onSuccess }: LeadModalProps) {
                   </div>
                 </div>
 
-                {/* Temperatura */}
-                <div>
-                  <label className={lbl}>Temperatura *</label>
-                  <div className="flex gap-2">
-                    {['Frio', 'Morno', 'Quente'].map(t => (
-                      <button
-                        key={t}
-                        type="button"
-                        onClick={() => setFormData({...formData, temperatura: t})}
-                        className={tempBtn(t, formData.temperatura === t)}
-                      >
-                        {t}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
                 {/* Valor Estimado */}
-                <div>
+                <div className="md:col-span-2">
                   <label className={lbl}>Valor Estimado (R$)</label>
                   <div className="relative group">
                     <input
@@ -236,6 +227,49 @@ export function LeadModal({ isOpen, onClose, onSuccess }: LeadModalProps) {
                       onChange={e => handleCurrencyInput(e.target.value)}
                     />
                     <DollarSign className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 group-focus-within:text-[#007AFF] transition-colors" />
+                  </div>
+                </div>
+
+                {/* Temperatura */}
+                <div className="md:col-span-2">
+                  <label className={lbl}>Temperatura *</label>
+                  <div className="grid grid-cols-3 gap-3">
+                    <button
+                      type="button"
+                      onClick={() => setFormData({...formData, temperatura: 'Frio'})}
+                      className={`flex items-center justify-center gap-2 py-3 rounded-2xl text-[12px] font-bold transition-all ${
+                        formData.temperatura === 'Frio' 
+                          ? 'bg-blue-500 text-white' 
+                          : 'bg-[#F8F9FA] text-gray-500 hover:bg-gray-100'
+                      }`}
+                    >
+                      <Snowflake className="w-4 h-4" />
+                      Frio
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setFormData({...formData, temperatura: 'Morno'})}
+                      className={`flex items-center justify-center gap-2 py-3 rounded-2xl text-[12px] font-bold transition-all ${
+                        formData.temperatura === 'Morno' 
+                          ? 'bg-orange-500 text-white' 
+                          : 'bg-[#F8F9FA] text-gray-500 hover:bg-gray-100'
+                      }`}
+                    >
+                      <Thermometer className="w-4 h-4" />
+                      Morno
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setFormData({...formData, temperatura: 'Quente'})}
+                      className={`flex items-center justify-center gap-2 py-3 rounded-2xl text-[12px] font-bold transition-all ${
+                        formData.temperatura === 'Quente' 
+                          ? 'bg-red-500 text-white' 
+                          : 'bg-[#F8F9FA] text-gray-500 hover:bg-gray-100'
+                      }`}
+                    >
+                      <Flame className="w-4 h-4" />
+                      Quente
+                    </button>
                   </div>
                 </div>
 

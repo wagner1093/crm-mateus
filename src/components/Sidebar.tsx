@@ -28,7 +28,6 @@ const menuItems = [
   { icon: Kanban, label: 'Pipeline', href: '/pipeline' },
   { icon: Send, label: 'Propostas', href: '/propostas' },
   { icon: Briefcase, label: 'Serviços', href: '/servicos' },
-  { icon: Box, label: 'Estoque', href: '/estoque' },
   { icon: DollarSign, label: 'Financeiro', href: '/financeiro' },
   { icon: UserCheck, label: 'Clientes', href: '/clientes' },
   { icon: UserPlus2, label: 'Equipe', href: '/equipe' },

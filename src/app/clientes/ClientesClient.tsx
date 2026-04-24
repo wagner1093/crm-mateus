@@ -12,6 +12,7 @@ import { supabase } from '@/lib/supabase';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { ClientModal } from '@/components/ClientModal';
+import { ConfirmModal } from '@/components/ConfirmModal';
 import { toast } from 'react-hot-toast';
 
 export default function ClientesClient() {
@@ -19,6 +20,7 @@ export default function ClientesClient() {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
   const [selectedClient, setSelectedClient] = useState<any>(null);
 
   useEffect(() => {
@@ -42,8 +44,11 @@ export default function ClientesClient() {
     }
   };
 
-  const handleDelete = async (id: string) => {
-    if (!confirm('Deseja excluir este cliente?')) return;
+  const handleDelete = (id: string) => {
+    setDeleteConfirmId(id);
+  };
+
+  const performDelete = async (id: string) => {
     try {
       const { error } = await supabase.from('crmmateus_clientes').delete().eq('id', id);
       if (error) throw error;
@@ -197,9 +202,22 @@ export default function ClientesClient() {
 
       <ClientModal 
         isOpen={isModalOpen} 
-        onClose={() => setIsModalOpen(false)} 
-        onSuccess={fetchClients} 
+        onClose={() => {
+          setIsModalOpen(false);
+          setSelectedClient(null);
+        }} 
+        onSuccess={fetchClients}
         client={selectedClient}
+      />
+
+      <ConfirmModal 
+        isOpen={!!deleteConfirmId}
+        onClose={() => setDeleteConfirmId(null)}
+        onConfirm={() => deleteConfirmId && performDelete(deleteConfirmId)}
+        title="Excluir Cliente"
+        message="Tem certeza que deseja excluir este cliente? Esta ação removerá permanentemente todos os dados e o histórico associados."
+        confirmText="Excluir Cliente"
+        variant="danger"
       />
     </div>
   );

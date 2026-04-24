@@ -3,10 +3,10 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { 
-  TrendingUp, Users, DollarSign, Target, Plus, Search, Filter, 
+  TrendingUp, TrendingDown, Wallet, Users, DollarSign, Target, Plus, Search, Filter, 
   ChevronUp, ChevronDown, Clock, CheckCircle2, AlertCircle,
   BarChart3, PieChart as PieChartIcon, ArrowRight, UserPlus,
-  Zap, Briefcase, FileText
+  Zap, Briefcase, FileText, Share2, ChevronRight
 } from 'lucide-react';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, Cell, PieChart, Pie } from 'recharts';
 import { cn } from '@/lib/utils';
@@ -24,6 +24,8 @@ export default function DashboardPage() {
   const [leadsData, setLeadsData] = useState<any[]>([]);
   const [clientsData, setClientsData] = useState<any[]>([]);
   const [financeData, setFinanceData] = useState<any[]>([]);
+  const [timeRange, setTimeRange] = useState('6m');
+
   
   const [kpiData, setKpiData] = useState([
     { label: 'Faturamento do Mês', value: 'R$ 0', change: '0%', icon: TrendingUp, color: '#007AFF' },
@@ -32,7 +34,10 @@ export default function DashboardPage() {
     { label: 'Conversão', value: '0%', icon: Zap, color: '#FF3B30' },
   ]);
 
+  const [isMounted, setIsMounted] = useState(false);
+
   useEffect(() => {
+    setIsMounted(true);
     fetchDashboardData();
   }, []);
 
@@ -79,14 +84,32 @@ export default function DashboardPage() {
     }
   };
 
-  const chartData = [
-    { name: 'Jan', value: 4000 },
-    { name: 'Fev', value: 3000 },
-    { name: 'Mar', value: 5000 },
-    { name: 'Abr', value: 4500 },
-    { name: 'Mai', value: 6000 },
-    { name: 'Jun', value: 5500 },
-  ];
+  const chartData = useMemo(() => {
+    if (timeRange === '12m') {
+      return [
+        { name: 'Jul', value: 3500, clientes: 2000 },
+        { name: 'Ago', value: 4200, clientes: 2500 },
+        { name: 'Set', value: 3800, clientes: 2200 },
+        { name: 'Out', value: 5000, clientes: 3000 },
+        { name: 'Nov', value: 4800, clientes: 2800 },
+        { name: 'Dez', value: 6200, clientes: 3500 },
+        { name: 'Jan', value: 4000, clientes: 2500 },
+        { name: 'Fev', value: 3000, clientes: 2000 },
+        { name: 'Mar', value: 5000, clientes: 3200 },
+        { name: 'Abr', value: 4500, clientes: 2800 },
+        { name: 'Mai', value: 6000, clientes: 3800 },
+        { name: 'Jun', value: 5500, clientes: 3400 },
+      ];
+    }
+    return [
+      { name: 'Jan', value: 4000, clientes: 2500 },
+      { name: 'Fev', value: 3000, clientes: 2000 },
+      { name: 'Mar', value: 5000, clientes: 3200 },
+      { name: 'Abr', value: 4500, clientes: 2800 },
+      { name: 'Mai', value: 6000, clientes: 3800 },
+      { name: 'Jun', value: 5500, clientes: 3400 },
+    ];
+  }, [timeRange]);
 
   const pieData = useMemo(() => {
     const counts: Record<string, number> = {};
@@ -97,235 +120,400 @@ export default function DashboardPage() {
     return Object.entries(counts).map(([name, value]) => ({ name, value }));
   }, [leadsData]);
 
+  const financialStats = useMemo(() => {
+    const receitas = financeData.filter(t => t.tipo === 'Entrada' && t.status === 'Pago').reduce((acc, curr) => acc + curr.valor, 0);
+    const aReceber = financeData.filter(t => t.tipo === 'Entrada' && t.status !== 'Pago').reduce((acc, curr) => acc + curr.valor, 0);
+    const despesas = financeData.filter(t => t.tipo === 'Saida').reduce((acc, curr) => acc + curr.valor, 0);
+    return { receitas, aReceber, despesas, saldo: receitas - despesas };
+  }, [financeData]);
+
+  const pipelineStats = useMemo(() => {
+    const novos = leadsData.filter(l => l.etapa === 'Novo').length;
+    const fechados = leadsData.filter(l => l.etapa === 'Fechado').length;
+    const perdidos = leadsData.filter(l => l.etapa === 'Perdido').length;
+    const emAndamento = leadsData.length - novos - fechados - perdidos;
+    return { novos, emAndamento, fechados, perdidos, total: leadsData.length };
+  }, [leadsData]);
+
+  const conversionRate = useMemo(() => {
+    return pipelineStats.total > 0 ? Math.round((pipelineStats.fechados / pipelineStats.total) * 100) : 0;
+  }, [pipelineStats]);
+
   return (
-    <div className="space-y-8 pb-10">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+    <div className="space-y-6 pb-12">
+      {/* ── Header ── */}
+      <div className="flex items-center justify-between mb-8">
         <div>
-          <h2 className="text-4xl font-extrabold tracking-tight bg-gradient-to-br from-gray-900 via-gray-800 to-gray-400 bg-clip-text text-transparent font-heading">
+          <h2 className="text-3xl font-bold text-[#111118] tracking-tight bg-clip-text text-transparent bg-gradient-to-br from-[#111118] via-[#111118] to-[#52525B]">
             Dashboard
           </h2>
-          <p className="text-muted-foreground text-sm font-medium mt-1">Gerenciamento executivo CRM MATEUS.</p>
+          <p className="text-sm font-medium text-gray-500 mt-1">Visão executiva e saúde do negócio</p>
         </div>
-        <div className="flex items-center gap-3">
-          <button className="bg-white border border-gray-100 px-5 py-3 rounded-2xl font-bold text-xs text-gray-500 flex items-center gap-2 hover:bg-gray-50 transition-all shadow-sm">
-            <Filter className="w-4 h-4" />
-            <span>Filtros</span>
-          </button>
-          <button 
-            onClick={() => setIsLeadModalOpen(true)}
-            className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-2xl font-bold text-xs flex items-center gap-2 transition-all shadow-lg shadow-blue-200"
-          >
-            <UserPlus className="w-4 h-4" />
-            <span>Novo Lead</span>
-          </button>
-        </div>
+        <button
+          onClick={() => setIsLeadModalOpen(true)}
+          className="bg-[#1C1C1E] text-white px-6 py-3 rounded-2xl text-sm font-bold flex items-center gap-2 hover:bg-black transition-all shadow-lg active:scale-95"
+        >
+          <UserPlus className="w-4 h-4" />
+          Novo lead
+        </button>
       </div>
 
-      {/* KPI GRID */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        {kpiData.map((kpi, i) => (
-          <motion.div
-            key={i}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: i * 0.1 }}
-            className="bg-white border border-gray-100 rounded-[32px] p-7 group hover:shadow-2xl hover:shadow-gray-200/50 hover:translate-y-[-4px] transition-all duration-300"
-          >
-            <div className="flex justify-between items-start mb-6">
-              <div className="p-4 rounded-2xl bg-gray-50 group-hover:bg-white transition-colors shadow-sm">
-                <kpi.icon className="w-6 h-6" style={{ color: kpi.color }} />
+      {/* ── Top Row: Financial Overview ── */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
+        {[
+          { label: 'Entradas (Pagas)', value: financialStats.receitas, icon: TrendingUp, color: 'text-emerald-600', bg: 'bg-emerald-500/10', border: 'border-emerald-500/20', dot: 'bg-emerald-500' },
+          { label: 'A Receber', value: financialStats.aReceber, icon: Clock, color: 'text-blue-600', bg: 'bg-blue-500/10', border: 'border-blue-500/20', dot: 'bg-blue-500' },
+          { label: 'Despesas', value: financialStats.despesas, icon: TrendingDown, color: 'text-rose-600', bg: 'bg-rose-500/10', border: 'border-rose-500/20', dot: 'bg-rose-500' },
+          { label: 'Saldo Líquido', value: financialStats.saldo, icon: Wallet, color: 'text-violet-600', bg: 'bg-violet-500/10', border: 'border-violet-500/20', dot: 'bg-violet-500' },
+        ].map((item, i) => (
+          <div key={i} className="bg-white rounded-[32px] p-8 shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-100 relative overflow-hidden group hover:shadow-[0_8px_30px_rgb(0,0,0,0.08)] transition-all">
+            <div className={`absolute -top-16 -right-16 w-32 h-32 ${item.bg} rounded-full blur-2xl transition-transform group-hover:scale-150`} />
+            
+            <div className="relative z-10">
+              <div className="flex justify-between items-start mb-6">
+                <div className={`w-14 h-14 rounded-2xl ${item.bg} ${item.color} flex items-center justify-center border ${item.border}`}>
+                  <item.icon className="w-7 h-7" />
+                </div>
+                <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-gray-50 border border-gray-100">
+                  <div className={`w-1.5 h-1.5 rounded-full ${item.dot} animate-pulse`} />
+                  <span className="text-[10px] font-black uppercase tracking-widest text-gray-500">Hoje</span>
+                </div>
               </div>
-              {kpi.change && (
-                <span className={cn(
-                  "flex items-center gap-1 text-[10px] font-black px-2.5 py-1.5 rounded-full uppercase tracking-wider",
-                  kpi.change.startsWith('+') ? "bg-green-50 text-green-600" : "bg-red-50 text-red-600"
-                )}>
-                  {kpi.change.startsWith('+') ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
-                  {kpi.change}
-                </span>
-              )}
+              
+              <div>
+                <p className="text-[11px] font-black uppercase tracking-widest text-gray-400 mb-2">{item.label}</p>
+                <div className="flex items-baseline gap-0.5">
+                  <span className="text-3xl font-bold tracking-tighter text-[#111118]">
+                    R$ {Math.floor(item.value).toLocaleString('pt-BR')}
+                  </span>
+                  <span className="text-sm font-bold text-gray-400">,{(item.value % 1).toFixed(2).split('.')[1] || '00'}</span>
+                </div>
+              </div>
             </div>
-            <p className="text-[11px] font-black text-gray-400 uppercase tracking-[0.2em] mb-1.5">{kpi.label}</p>
-            <h3 className="text-3xl font-black text-gray-900 tracking-tight font-heading">{kpi.value}</h3>
-          </motion.div>
+          </div>
         ))}
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        <div className="lg:col-span-2 space-y-8">
-          {/* REVENUE CHART */}
-          <div className="bg-white border border-gray-100 rounded-[40px] p-8 shadow-sm">
-            <div className="flex items-center justify-between mb-10">
-              <div>
-                <h3 className="text-xl font-bold text-gray-900 font-heading">Crescimento de Faturamento</h3>
-                <p className="text-xs text-gray-400 font-medium">Evolução mensal consolidada.</p>
+      {/* ── Second Row: Goals & Evolution ── */}
+      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 mb-6">
+        {/* Meta de Faturamento (2 cols) */}
+        <div className="lg:col-span-2 bg-white rounded-[32px] p-8 shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-100 flex flex-col justify-between min-h-[420px] relative overflow-hidden">
+          <div className="absolute -top-10 -right-10 w-48 h-48 bg-blue-100/40 rounded-full blur-3xl pointer-events-none" />
+          <div className="absolute -bottom-10 -left-10 w-40 h-40 bg-sky-100/40 rounded-full blur-3xl pointer-events-none" />
+          
+          <div className="relative z-10 flex justify-between items-start">
+            <div>
+              <div className="flex items-center gap-2 mb-1">
+                <div className="p-1.5 bg-blue-50 rounded-lg border border-blue-100">
+                  <Target className="w-4 h-4 text-blue-600" />
+                </div>
+                <span className="text-[11px] font-black uppercase tracking-widest text-gray-400">Meta Mensal</span>
               </div>
-              <div className="flex gap-2 p-1 bg-gray-50 rounded-xl">
-                <button className="px-4 py-2 rounded-lg bg-white shadow-sm text-[10px] font-black uppercase text-gray-900 transition-all">Mensal</button>
-                <button className="px-4 py-2 rounded-lg text-[10px] font-black uppercase text-gray-400 hover:text-gray-600 transition-all">Semanal</button>
-              </div>
+              <h3 className="text-xl font-bold tracking-tight text-[#111118]">Meta de Faturamento</h3>
             </div>
-            <div className="h-[350px] w-full">
-              <ResponsiveContainer width="100%" height="100%">
-                <AreaChart data={chartData}>
-                  <defs>
-                    <linearGradient id="colorValue" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#007AFF" stopOpacity={0.15}/>
-                      <stop offset="95%" stopColor="#007AFF" stopOpacity={0}/>
-                    </linearGradient>
-                  </defs>
-                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#F0F0F0" />
-                  <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 11, fontWeight: 700, fill: '#999' }} dy={10} />
-                  <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 11, fontWeight: 700, fill: '#999' }} dx={-10} />
-                  <Tooltip 
-                    contentStyle={{ borderRadius: '24px', border: 'none', boxShadow: '0 20px 40px -10px rgba(0,0,0,0.1)', padding: '16px' }}
-                    itemStyle={{ fontSize: '13px', fontWeight: '900', color: '#007AFF' }}
-                    labelStyle={{ fontSize: '11px', fontWeight: '700', color: '#999', marginBottom: '4px' }}
-                  />
-                  <Area type="monotone" dataKey="value" stroke="#007AFF" strokeWidth={4} fillOpacity={1} fill="url(#colorValue)" />
-                </AreaChart>
-              </ResponsiveContainer>
+            <div className="bg-gray-50 border border-gray-100 px-4 py-2 rounded-2xl">
+              <span className="text-xs font-black uppercase tracking-widest text-gray-500">Faltam {100 - Math.min(Math.round((financialStats.receitas / 50000) * 100), 100)}%</span>
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            {/* ORIGIN PIE CHART */}
-            <div className="bg-white border border-gray-100 rounded-[40px] p-8 shadow-sm">
-              <h3 className="text-lg font-bold mb-8 flex items-center gap-3 font-heading">
-                <div className="p-2 rounded-xl bg-blue-50 text-blue-600">
-                  <PieChartIcon className="w-5 h-5" />
+          <div className="relative z-10 my-6 flex-1 flex flex-col justify-center">
+            <div className="flex justify-between items-end mb-4">
+              <div>
+                <p className="text-[11px] font-black uppercase tracking-widest text-gray-400 mb-1">Realizado</p>
+                <div className="flex items-baseline gap-1">
+                  <span className="text-3xl font-bold tracking-tighter text-[#111118]">R$ {financialStats.receitas.toLocaleString('pt-BR')}</span>
+                  <span className="text-sm font-bold text-gray-400">/ R$ 50k</span>
                 </div>
-                Origem de Leads
-              </h3>
-              <div className="h-[250px] w-full">
-                <ResponsiveContainer width="100%" height="100%">
-                  <PieChart>
-                    <Pie
-                      data={pieData.length > 0 ? pieData : [{ name: 'Sem dados', value: 1 }]}
-                      innerRadius={60}
-                      outerRadius={80}
-                      paddingAngle={8}
-                      dataKey="value"
-                    >
-                      {pieData.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                      ))}
-                    </Pie>
-                    <Tooltip 
-                      contentStyle={{ borderRadius: '20px', border: 'none', boxShadow: '0 10px 30px rgba(0,0,0,0.1)' }}
-                      itemStyle={{ fontSize: '12px', fontWeight: 'bold' }}
-                    />
-                  </PieChart>
-                </ResponsiveContainer>
               </div>
-              <div className="grid grid-cols-2 gap-4 mt-4">
-                {pieData.slice(0, 4).map((d, i) => (
-                  <div key={i} className="flex items-center gap-2">
-                    <div className="w-2 h-2 rounded-full" style={{ backgroundColor: COLORS[i % COLORS.length] }} />
-                    <span className="text-[11px] font-bold text-gray-500 truncate">{d.name}</span>
-                  </div>
-                ))}
+              <div className="text-right">
+                <span className="text-3xl font-bold tracking-tighter text-gray-200">{Math.min(Math.round((financialStats.receitas / 50000) * 100), 100)}%</span>
               </div>
             </div>
+            
+            <div className="w-full bg-gray-100 rounded-full h-5 p-1.5 border border-gray-200 shadow-inner">
+              <div 
+                className="h-full bg-gradient-to-r from-blue-500 to-blue-600 rounded-full transition-all duration-1000 shadow-[0_0_15px_rgba(29,124,249,0.3)]" 
+                style={{ width: `${Math.min(Math.round((financialStats.receitas / 50000) * 100), 100)}%` }}
+              />
+            </div>
+          </div>
 
-            {/* PROGRESS METRICS */}
-            <div className="bg-white border border-gray-100 rounded-[40px] p-8 shadow-sm">
-              <h3 className="text-lg font-bold mb-8 flex items-center gap-3 font-heading">
-                <div className="p-2 rounded-xl bg-green-50 text-green-600">
-                  <Target className="w-5 h-5" />
-                </div>
-                Metas Atuais
-              </h3>
-              <div className="space-y-6">
-                {[
-                  { label: 'Meta Faturamento', progress: 65, color: 'bg-blue-600 shadow-blue-200' },
-                  { label: 'Novos Clientes', progress: 40, color: 'bg-green-500 shadow-green-200' },
-                  { label: 'Propostas Enviadas', progress: 85, color: 'bg-indigo-500 shadow-indigo-200' }
-                ].map((meta, i) => (
-                  <div key={i} className="space-y-3">
-                    <div className="flex justify-between text-[11px] font-black uppercase tracking-widest text-gray-400">
-                      <span>{meta.label}</span>
-                      <span className="text-gray-900">{meta.progress}%</span>
-                    </div>
-                    <div className="w-full h-3 bg-gray-50 rounded-full overflow-hidden p-0.5">
-                      <motion.div 
-                        initial={{ width: 0 }}
-                        animate={{ width: `${meta.progress}%` }}
-                        transition={{ duration: 1.5, ease: "easeOut" }}
-                        className={cn("h-full rounded-full shadow-lg", meta.color)} 
-                      />
-                    </div>
-                  </div>
-                ))}
+          <div className="relative z-10 flex items-center justify-between pt-6 border-t border-gray-100">
+            <div className="flex items-center gap-2 bg-gray-50 px-4 py-2 rounded-xl border border-gray-100">
+              <div className="w-2 h-2 rounded-full bg-emerald-400" />
+              <span className="text-xs font-bold uppercase tracking-widest text-gray-600">
+                Faltam R$ {Math.max(50000 - financialStats.receitas, 0).toLocaleString('pt-BR')}
+              </span>
+            </div>
+            <p className="text-[10px] font-medium text-gray-400 uppercase tracking-widest">Atualizado agora</p>
+          </div>
+        </div>
+
+        {/* Main Chart (2 cols) */}
+        <div className="lg:col-span-2 bg-white rounded-[32px] p-8 shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-100 flex flex-col min-h-[420px] relative overflow-hidden">
+          <div className="absolute -top-20 -right-20 w-64 h-64 bg-blue-100/60 rounded-full blur-3xl pointer-events-none" />
+          <div className="absolute -bottom-20 -left-10 w-48 h-48 bg-sky-100/60 rounded-full blur-3xl pointer-events-none" />
+
+          <div className="flex flex-wrap justify-between items-start gap-4 mb-6 relative z-10">
+            <div>
+              <div className="flex items-center gap-2 mb-1">
+                <div className="w-2 h-2 rounded-full bg-[#34C759] animate-pulse" />
+                <span className="text-[11px] font-black uppercase tracking-widest text-gray-400">Ao Vivo</span>
               </div>
+              <h3 className="text-xl font-bold text-[#111118] tracking-tight">Evolução de Receita</h3>
+              <p className="text-sm font-medium text-gray-400 mt-0.5">Entradas vs. A Receber — últimos {timeRange === '6m' ? '6' : '12'} meses</p>
+            </div>
+            <div className="flex items-center gap-4">
+              <div className="flex gap-2">
+                <button 
+                  onClick={() => setTimeRange('6m')}
+                  className={cn(
+                    "px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest transition-all duration-300",
+                    timeRange === '6m' 
+                      ? "bg-[#1d7cf9] text-white" 
+                      : "bg-gray-100 text-gray-400 hover:bg-gray-200"
+                  )}
+                >
+                  6 Meses
+                </button>
+                <button 
+                  onClick={() => setTimeRange('12m')}
+                  className={cn(
+                    "px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest transition-all duration-300",
+                    timeRange === '12m' 
+                      ? "bg-[#1d7cf9] text-white" 
+                      : "bg-gray-100 text-gray-400 hover:bg-gray-200"
+                  )}
+                >
+                  12 Meses
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-3 gap-3 mb-6 relative z-10">
+            {[
+              { label: 'Pico Mensal', value: `R$ ${Math.max(...chartData.map(d => d.value)).toLocaleString('pt-BR')}`, color: 'text-blue-600', bg: 'bg-blue-50 border-blue-100' },
+              { label: 'Média', value: `R$ ${chartData.length ? Math.round(chartData.reduce((s, d) => s + d.value, 0) / chartData.length).toLocaleString('pt-BR') : '0'}`, color: 'text-sky-600', bg: 'bg-sky-50 border-sky-100' },
+              { label: 'Total', value: `R$ ${chartData.reduce((s, d) => s + d.value, 0).toLocaleString('pt-BR')}`, color: 'text-emerald-600', bg: 'bg-emerald-50 border-emerald-100' },
+            ].map((kpi, i) => (
+              <div key={i} className={`${kpi.bg} border rounded-2xl px-4 py-3`}>
+                <p className="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-1">{kpi.label}</p>
+                <p className={`text-lg font-bold tracking-tight ${kpi.color}`}>{kpi.value}</p>
+              </div>
+            ))}
+          </div>
+
+          <div className="flex-1 w-full relative z-10 min-h-[300px]">
+            {isMounted && (
+              <ResponsiveContainer width="100%" height="100%">
+                <AreaChart data={chartData} margin={{ top: 10, right: 0, left: 0, bottom: 30 }}>
+                  <CartesianGrid strokeDasharray="4 4" vertical={false} stroke="#F3F4F6" />
+                  <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: '#9CA3AF', fontWeight: 800 }} dy={14} />
+                  <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: '#9CA3AF', fontWeight: 800 }} width={45} />
+                  <Tooltip cursor={{ stroke: '#E5E7EB', strokeWidth: 1 }} contentStyle={{ borderRadius: '16px', border: '1px solid #E5E7EB', background: '#ffffff', boxShadow: '0 10px 30px rgba(0,0,0,0.08)', fontWeight: 700, color: '#111118' }} />
+                  <Area type="monotone" dataKey="value" name="Receita" stroke="#1d7cf9" strokeWidth={2.5} fill="transparent" dot={false} activeDot={{ r: 5, fill: '#1d7cf9', stroke: '#fff', strokeWidth: 2 }} />
+                  <Area type="monotone" dataKey="clientes" name="A Receber" stroke="#0EA5E9" strokeWidth={2} fill="transparent" dot={false} activeDot={{ r: 4, fill: '#0EA5E9', stroke: '#fff', strokeWidth: 2 }} />
+                </AreaChart>
+              </ResponsiveContainer>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* ── Third Row: Analytics & Actions ── */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
+        {/* Funil de Vendas (1 col) */}
+        <div className="bg-white rounded-[32px] p-8 shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-100 flex flex-col min-h-[280px] relative overflow-hidden">
+          <div className="absolute -top-16 -right-16 w-48 h-48 bg-blue-100/50 rounded-full blur-3xl pointer-events-none" />
+          <div className="absolute -bottom-12 -left-8 w-32 h-32 bg-sky-100/40 rounded-full blur-3xl pointer-events-none" />
+          
+          <div className="relative z-10 mb-6">
+            <div className="flex items-center gap-2 mb-1">
+              <div className="w-2 h-2 rounded-full bg-blue-400" />
+              <span className="text-[11px] font-black uppercase tracking-widest text-gray-400">Pipeline</span>
+            </div>
+            <h3 className="text-xl font-bold text-[#111118] tracking-tight">Funil de Vendas</h3>
+            <p className="text-sm font-medium text-gray-400 mt-0.5">{pipelineStats.total} leads no total</p>
+          </div>
+          
+          <div className="space-y-5 flex-1 flex flex-col justify-center relative z-10">
+            {[
+              { label: 'Novos', value: pipelineStats.novos, from: 'from-blue-400', to: 'to-blue-600', bg: 'bg-blue-50', text: 'text-blue-600', total: pipelineStats.total },
+              { label: 'Em Andamento', value: pipelineStats.emAndamento, from: 'from-sky-400', to: 'to-blue-500', bg: 'bg-sky-50', text: 'text-sky-600', total: pipelineStats.total },
+              { label: 'Fechados', value: pipelineStats.fechados, from: 'from-emerald-400', to: 'to-teal-500', bg: 'bg-emerald-50', text: 'text-emerald-600', total: pipelineStats.total },
+            ].map((item, i) => (
+              <div key={i}>
+                <div className="flex justify-between text-[11px] font-black uppercase tracking-widest mb-2">
+                  <span className="text-gray-400">{item.label}</span>
+                  <span className={`${item.text} font-black`}>{item.value}</span>
+                </div>
+                <div className={`w-full ${item.bg} rounded-full h-2.5 overflow-hidden`}>
+                  <div className={`h-full rounded-full bg-gradient-to-r ${item.from} ${item.to} transition-all duration-1000 shadow-sm`} style={{ width: `${item.total > 0 ? (item.value / item.total) * 100 : 0}%` }} />
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Conversão (1 col) */}
+        <div className="bg-white rounded-[32px] p-8 shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-100 flex flex-col justify-between min-h-[280px] relative overflow-hidden">
+          <div className="absolute -top-16 -right-16 w-48 h-48 bg-blue-100/50 rounded-full blur-3xl pointer-events-none" />
+          <div className="absolute -bottom-12 -left-8 w-32 h-32 bg-sky-100/40 rounded-full blur-3xl pointer-events-none" />
+
+          <div className="relative z-10">
+            <div className="flex items-center gap-2 mb-1">
+              <div className="w-2 h-2 rounded-full bg-blue-400" />
+              <span className="text-[11px] font-black uppercase tracking-widest text-gray-400">Conversão</span>
+            </div>
+            <h3 className="text-xl font-bold text-[#111118] tracking-tight">Taxa de Sucesso</h3>
+          </div>
+          
+          <div className="flex flex-col items-center justify-center flex-1 my-4 relative z-10">
+            <div className="relative flex items-center justify-center w-[120px] h-[120px]">
+              <svg className="w-full h-full transform -rotate-90">
+                <defs>
+                  <linearGradient id="ringGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                    <stop offset="0%" stopColor="#1d7cf9" />
+                    <stop offset="100%" stopColor="#60A5FA" />
+                  </linearGradient>
+                </defs>
+                <circle cx="60" cy="60" r="50" stroke="#f0f7ff" strokeWidth="10" fill="none" />
+                <circle cx="60" cy="60" r="50" stroke="url(#ringGrad)" strokeWidth="10" fill="none" strokeDasharray={`${2 * Math.PI * 50}`} strokeDashoffset={`${2 * Math.PI * 50 * (1 - conversionRate / 100)}`} strokeLinecap="round" className="transition-all duration-1000" />
+              </svg>
+              <div className="absolute flex flex-col items-center justify-center">
+                <span className="text-3xl font-black tracking-tighter bg-gradient-to-br from-blue-600 to-sky-600 bg-clip-text text-transparent">{conversionRate}%</span>
+              </div>
+            </div>
+          </div>
+          <div className="text-center relative z-10">
+            <div className="inline-flex items-center gap-2 bg-blue-50 border border-blue-100 px-4 py-2 rounded-full">
+              <span className="text-sm font-black text-blue-700">{clientsData.length}</span>
+              <span className="text-[11px] font-black uppercase tracking-widest text-blue-400">Clientes Ativos</span>
             </div>
           </div>
         </div>
 
-        <div className="space-y-8">
-          {/* RECENT ACTIVITY */}
-          <div className="bg-white border border-gray-100 rounded-[40px] p-8 shadow-sm">
-            <div className="flex items-center justify-between mb-8">
-              <h3 className="text-lg font-bold font-heading text-gray-900">Atividade Recente</h3>
-              <button className="text-[11px] font-black uppercase tracking-wider text-blue-600 hover:text-blue-700 transition-all">Ver tudo</button>
+        {/* Origens (1 col) */}
+        <div className="bg-white rounded-[32px] p-8 shadow-[0_2px_10px_rgba(0,0,0,0.02)] border border-gray-100 flex flex-col min-h-[280px]">
+          <div className="flex items-start gap-3 mb-6">
+            <div className="p-2.5 rounded-2xl bg-blue-50 border border-blue-100">
+              <PieChartIcon className="w-5 h-5 text-blue-600" />
             </div>
-            <div className="space-y-8">
-              {loading ? (
-                Array.from({ length: 4 }).map((_, i) => (
-                  <div key={i} className="flex gap-4 animate-pulse">
-                    <div className="w-12 h-12 rounded-2xl bg-gray-50" />
-                    <div className="flex-1 space-y-3 py-1">
-                      <div className="h-3 bg-gray-50 rounded-lg w-3/4" />
-                      <div className="h-2 bg-gray-50 rounded-lg w-1/2" />
-                    </div>
-                  </div>
-                ))
-              ) : recentActivity.length === 0 ? (
-                <div className="py-12 text-center">
-                  <div className="w-16 h-16 bg-gray-50 rounded-3xl flex items-center justify-center mx-auto mb-4">
-                    <Clock className="w-8 h-8 text-gray-200" />
-                  </div>
-                  <p className="text-gray-400 text-xs font-bold uppercase tracking-widest">Sem atividades</p>
+            <div>
+              <h3 className="text-xl font-bold text-[#111118] tracking-tight">Origens</h3>
+              <p className="text-sm font-medium text-gray-400 mt-0.5">Vem seus leads</p>
+            </div>
+          </div>
+          
+          <div className="flex-1 w-full min-h-[160px]">
+            {isMounted && (
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie data={pieData.length > 0 ? pieData : [{ name: 'Sem dados', value: 1 }]} innerRadius={40} outerRadius={65} paddingAngle={6} dataKey="value">
+                    {pieData.map((entry, index) => {
+                      const pieColors = ['#1d7cf9', '#60A5FA', '#93C5FD', '#34D399', '#3b82f6'];
+                      return <Cell key={`cell-${index}`} fill={pieColors[index % pieColors.length]} />;
+                    })}
+                  </Pie>
+                  <Tooltip contentStyle={{ borderRadius: '16px', border: '1px solid #E5E7EB', boxShadow: '0 10px 25px rgba(0,0,0,0.06)', fontSize: '13px', fontWeight: 600, background: '#fff' }} />
+                </PieChart>
+              </ResponsiveContainer>
+            )}
+          </div>
+        </div>
+
+        {/* Quick Actions (1 col) */}
+        <div className="bg-gradient-to-br from-[#1d7cf9] to-[#0b5ed7] rounded-[32px] p-8 shadow-[0_20px_50px_rgba(29,124,249,0.3)] flex flex-col justify-between text-white relative overflow-hidden min-h-[280px]">
+          <div className="absolute -top-10 -right-10 w-40 h-40 bg-white/10 rounded-full blur-3xl pointer-events-none" />
+          <div className="absolute -bottom-10 -left-10 w-32 h-32 bg-sky-300/20 rounded-full blur-3xl pointer-events-none" />
+          
+          <div className="relative z-10">
+            <div className="flex items-center gap-3 mb-2">
+              <div className="p-2.5 bg-white/20 backdrop-blur-md rounded-2xl border border-white/30 shadow-inner">
+                <Zap className="w-5 h-5 text-white" />
+              </div>
+              <h3 className="text-xl font-bold tracking-tight text-white">Ações Rápidas</h3>
+            </div>
+            <p className="text-white text-sm mb-6 font-medium">Gerenciar negócio</p>
+            
+            <div className="space-y-3">
+              <button onClick={() => setIsLeadModalOpen(true)} className="w-full bg-white/10 hover:bg-white/20 backdrop-blur-lg border border-white/20 transition-all duration-300 p-3.5 rounded-[20px] flex items-center gap-3 text-sm font-bold group shadow-sm hover:shadow-md hover:-translate-y-0.5">
+                <div className="bg-white/20 p-2 rounded-xl group-hover:bg-white/30 transition-colors border border-white/10">
+                  <Target className="w-4 h-4 text-white" />
                 </div>
-              ) : (
-                recentActivity.map((activity, i) => (
-                  <div key={i} className="flex gap-5 relative group">
-                    {i !== recentActivity.length - 1 && (
-                      <div className="absolute left-[23px] top-12 w-[2px] h-10 bg-gray-50 group-hover:bg-blue-50 transition-colors" />
-                    )}
-                    <div className={cn("w-12 h-12 rounded-2xl flex items-center justify-center flex-shrink-0 z-10 transition-all duration-300 group-hover:scale-110 shadow-sm", activity.color)}>
-                      <activity.icon className="w-5 h-5" />
+                Cadastrar Lead
+              </button>
+              
+              <button className="w-full bg-white/10 hover:bg-white/20 backdrop-blur-lg border border-white/20 transition-all duration-300 p-3.5 rounded-[20px] flex items-center gap-3 text-sm font-bold group shadow-sm hover:shadow-md hover:-translate-y-0.5">
+                <div className="bg-white/20 p-2 rounded-xl group-hover:bg-white/30 transition-colors border border-white/10">
+                  <Users className="w-4 h-4 text-white" />
+                </div>
+                Novo Cliente
+              </button>
+              
+              <button className="w-full bg-white/10 hover:bg-white/20 backdrop-blur-lg border border-white/20 transition-all duration-300 p-3.5 rounded-[20px] flex items-center gap-3 text-sm font-bold group shadow-sm hover:shadow-md hover:-translate-y-0.5">
+                <div className="bg-white/20 p-2 rounded-xl group-hover:bg-white/30 transition-colors border border-white/10">
+                  <DollarSign className="w-4 h-4 text-sky-200" />
+                </div>
+                Receita
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* ── Fourth Row: Activity ── */}
+      <div className="grid grid-cols-1 gap-6">
+        {/* Recent Activity (Full width) */}
+        <div className="bg-white rounded-[32px] p-8 shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-100 relative overflow-hidden">
+          <div className="absolute -top-20 -right-20 w-64 h-64 bg-blue-100/30 rounded-full blur-3xl pointer-events-none" />
+          <div className="absolute -bottom-16 -left-10 w-48 h-48 bg-blue-100/20 rounded-full blur-3xl pointer-events-none" />
+
+          <div className="flex items-center justify-between mb-8 relative z-10">
+            <div>
+              <div className="flex items-center gap-2 mb-1">
+                <div className="w-2 h-2 rounded-full bg-blue-400" />
+                <span className="text-[11px] font-black uppercase tracking-widest text-gray-400">Recente</span>
+              </div>
+              <h3 className="text-xl font-bold text-[#111118] tracking-tight">Atividade Recente</h3>
+            </div>
+            <button className="text-[10px] font-black uppercase tracking-widest text-blue-500 bg-blue-50 border border-blue-100 px-4 py-2 rounded-full hover:bg-blue-100 transition-colors">Ver tudo</button>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 relative z-10">
+            {loading ? (
+              [1, 2, 3].map(i => (
+                <div key={i} className="flex items-center gap-4 p-4 border border-gray-50 rounded-[24px]">
+                  <div className="w-12 h-12 rounded-[16px] bg-gray-50 border border-gray-100 animate-pulse shrink-0" />
+                  <div className="space-y-2 flex-1">
+                    <div className="h-3 bg-gray-100 rounded w-1/3 animate-pulse" />
+                    <div className="h-2.5 bg-gray-100 rounded w-1/4 animate-pulse" />
+                  </div>
+                </div>
+              ))
+            ) : (
+              recentActivity.map((activity, i) => (
+                <div key={i} className="flex items-center justify-between group p-4 border border-transparent hover:border-blue-50 hover:bg-gradient-to-r hover:from-blue-50/60 hover:to-transparent rounded-[24px] transition-all duration-300">
+                  <div className="flex items-center gap-4">
+                    <div className={cn("w-12 h-12 rounded-2xl border shadow-sm flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform", activity.color.split(' ')[0])}>
+                      <activity.icon className={cn("w-5 h-5", activity.color.split(' ')[1])} />
                     </div>
                     <div>
-                      <p className="text-sm font-bold text-gray-900 leading-snug group-hover:text-blue-600 transition-colors">{activity.title}</p>
-                      <p className="text-[10px] font-black text-gray-400 mt-1.5 flex items-center gap-1.5 uppercase tracking-wider">
-                        <Clock className="w-3.5 h-3.5" /> {format(new Date(activity.time), 'HH:mm • dd MMM', { locale: ptBR })}
+                      <p className="text-sm font-bold text-[#111118] tracking-tight leading-tight">{activity.title}</p>
+                      <p className="text-[11px] font-medium text-gray-400 mt-1 uppercase tracking-wider flex items-center gap-1.5">
+                        <Clock className="w-3 h-3" /> {activity.time}
                       </p>
                     </div>
                   </div>
-                ))
-              )}
-            </div>
-          </div>
-
-          {/* AD / UPGRADE CARD */}
-          <div className="bg-gray-900 rounded-[40px] p-8 text-white border-none shadow-2xl relative overflow-hidden group">
-            <div className="absolute top-0 right-0 w-48 h-48 bg-blue-600/20 rounded-full -mr-24 -mt-24 blur-[80px] group-hover:bg-blue-600/30 transition-all duration-700" />
-            <div className="absolute bottom-0 left-0 w-32 h-32 bg-purple-600/10 rounded-full -ml-16 -mb-16 blur-[60px]" />
-            
-            <div className="relative z-10">
-              <div className="w-12 h-12 rounded-2xl bg-white/10 backdrop-blur-md flex items-center justify-center mb-6">
-                <FileText className="w-6 h-6 text-blue-400" />
-              </div>
-              <h4 className="text-[10px] font-black opacity-50 mb-3 uppercase tracking-[0.3em]">Premium Add-on</h4>
-              <h3 className="text-2xl font-black mb-4 leading-tight font-heading">Automação de Propostas PDF</h3>
-              <p className="text-[13px] opacity-60 font-medium leading-relaxed mb-8">
-                Gere propostas comerciais personalizadas e contratos jurídicos com apenas um clique.
-              </p>
-              <button className="w-full py-4 rounded-2xl bg-white text-gray-900 text-xs font-black uppercase tracking-widest hover:bg-blue-50 transition-all flex items-center justify-center gap-3 shadow-lg active:scale-95">
-                Ativar Módulo <ArrowRight className="w-4 h-4" />
-              </button>
-            </div>
+                  <div className="opacity-0 group-hover:opacity-100 transition-all">
+                    <div className="bg-blue-50 border border-blue-100 rounded-full p-1.5">
+                      <ChevronRight className="w-3.5 h-3.5 text-blue-500 group-hover:translate-x-0.5 transition-transform" />
+                    </div>
+                  </div>
+                </div>
+              ))
+            )}
           </div>
         </div>
       </div>
