@@ -6,6 +6,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { X, Save, DollarSign, Calendar, Tag, FileText, ArrowDownCircle, ArrowUpCircle, Check } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { toast } from 'react-hot-toast';
+import { cn } from '@/lib/utils';
 
 interface TransactionModalProps {
   isOpen: boolean;
@@ -20,8 +21,9 @@ export function TransactionModal({ isOpen, onClose, onSuccess, transaction }: Tr
     valor: 0,
     tipo: 'Entrada',
     categoria: '',
-    data_pagamento: new Date().toISOString().split('T')[0],
+    data_vencimento: new Date().toISOString().split('T')[0],
     status: 'Pendente',
+    is_fixo: false,
     observacoes: ''
   });
   const [loading, setLoading] = useState(false);
@@ -38,12 +40,24 @@ export function TransactionModal({ isOpen, onClose, onSuccess, transaction }: Tr
         valor: transaction.valor || 0,
         tipo: transaction.tipo || 'Entrada',
         categoria: transaction.categoria || '',
-        data_pagamento: transaction.data_pagamento || new Date().toISOString().split('T')[0],
+        data_vencimento: transaction.data_vencimento || new Date().toISOString().split('T')[0],
         status: transaction.status || 'Pendente',
+        is_fixo: transaction.is_fixo || false,
         observacoes: transaction.observacoes || ''
       });
+    } else {
+      setFormData({
+        descricao: '',
+        valor: 0,
+        tipo: 'Entrada',
+        categoria: '',
+        data_vencimento: new Date().toISOString().split('T')[0],
+        status: 'Pendente',
+        is_fixo: false,
+        observacoes: ''
+      });
     }
-  }, [transaction]);
+  }, [transaction, isOpen]);
 
   useEffect(() => {
     if (isOpen) {
@@ -87,8 +101,8 @@ export function TransactionModal({ isOpen, onClose, onSuccess, transaction }: Tr
     }
   };
 
-  const lbl = "text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-3 block ml-1";
-  const inI = "w-full px-5 py-4 rounded-2xl bg-gray-50 border-none text-sm font-medium text-gray-900 focus:ring-2 focus:ring-blue-500/10 focus:bg-white outline-none transition-all placeholder:text-gray-300";
+  const lbl = "text-[13px] font-bold text-[#64748B] mb-2 block font-dmsans uppercase tracking-wide";
+  const inI = "w-full bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl px-4 py-3 text-[14px] text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all font-dmsans placeholder:text-gray-400";
 
   return createPortal(
     <AnimatePresence>
@@ -200,21 +214,21 @@ export function TransactionModal({ isOpen, onClose, onSuccess, transaction }: Tr
 
                 {/* Data */}
                 <div>
-                  <label className={lbl}>Data do Pagamento *</label>
+                  <label className={lbl}>Data do Vencimento *</label>
                   <div className="relative group">
                     <input
                       type="date"
                       required
                       className={inI + " pl-14"}
-                      value={formData.data_pagamento}
-                      onChange={e => setFormData({...formData, data_pagamento: e.target.value})}
+                      value={formData.data_vencimento}
+                      onChange={e => setFormData({...formData, data_vencimento: e.target.value})}
                     />
                     <Calendar className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-300 group-focus-within:text-blue-500 transition-colors" />
                   </div>
                 </div>
 
                 {/* Status */}
-                <div className="md:col-span-2">
+                <div>
                   <label className={lbl}>Status do Lançamento *</label>
                   <select
                     className={inI + " appearance-none cursor-pointer"}
@@ -225,6 +239,28 @@ export function TransactionModal({ isOpen, onClose, onSuccess, transaction }: Tr
                     <option value="Pago">Confirmado / Pago</option>
                     <option value="Atrasado">Atrasado</option>
                   </select>
+                </div>
+
+                {/* Recorrência (Fixa) */}
+                <div className="md:col-span-2">
+                  <label className="flex items-center gap-3 p-5 rounded-2xl bg-gray-50 border-2 border-transparent hover:border-blue-100 transition-all cursor-pointer group">
+                    <div className={cn(
+                      "w-6 h-6 rounded-lg border-2 flex items-center justify-center transition-all",
+                      formData.is_fixo ? "bg-blue-500 border-blue-500 shadow-lg shadow-blue-200" : "bg-white border-gray-200 group-hover:border-gray-300"
+                    )}>
+                      {formData.is_fixo && <Check className="w-4 h-4 text-white" />}
+                    </div>
+                    <input
+                      type="checkbox"
+                      className="hidden"
+                      checked={formData.is_fixo}
+                      onChange={e => setFormData({...formData, is_fixo: e.target.checked})}
+                    />
+                    <div>
+                      <p className="text-sm font-bold text-gray-900">Despesa Fixa (Recorrente)</p>
+                      <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Aparecerá automaticamente todos os meses</p>
+                    </div>
+                  </label>
                 </div>
               </div>
 

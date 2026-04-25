@@ -196,7 +196,7 @@ export default function ChatClient() {
               <input
                 type="text"
                 placeholder="Pergunte qualquer coisa sobre sua agência..."
-                className="w-full bg-white pl-6 pr-24 py-4 rounded-2xl border-none focus:ring-2 focus:ring-primary/20 shadow-sm text-sm"
+                className="w-full bg-[#F8FAFC] pl-6 pr-24 py-4 rounded-xl border border-[#E2E8F0] text-sm font-dmsans focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all outline-none"
                 value={input}
                 onChange={e => setInput(e.target.value)}
                 onKeyDown={e => e.key === 'Enter' && handleSend()}

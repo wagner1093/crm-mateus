@@ -104,7 +104,7 @@ export default function ServicosClient() {
         </div>
         <button
           onClick={() => handleOpenModal()}
-          className="px-6 py-3 rounded-2xl bg-[#007AFF] text-white text-sm font-bold shadow-lg shadow-blue-500/20 hover:bg-blue-600 transition-all flex items-center gap-2"
+          className="bg-[#1C1C1E] text-white px-6 py-2.5 rounded-2xl text-sm font-bold flex items-center gap-2 hover:bg-black transition-all shadow-lg active:scale-95"
         >
           <Plus className="w-4 h-4" />
           Novo serviço
@@ -139,7 +139,7 @@ export default function ServicosClient() {
             placeholder="Buscar serviço..."
             value={searchQuery}
             onChange={e => setSearchQuery(e.target.value)}
-            className="w-full pl-12 pr-4 py-3 rounded-2xl bg-[#F8F9FA] border border-transparent text-sm font-medium focus:bg-white focus:ring-2 focus:ring-blue-500/10 focus:border-blue-500/20 transition-all outline-none"
+            className="w-full pl-12 pr-4 py-3 rounded-xl bg-[#F8FAFC] border border-[#E2E8F0] text-sm font-dmsans focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all outline-none"
           />
         </div>
       </div>
@@ -349,10 +349,10 @@ function ServiceModal({ service, onClose, onSuccess }: {
 
           {/* Nome */}
           <div>
-            <label className="text-[11px] font-bold uppercase tracking-widest text-gray-400 mb-2 block ml-1">Nome do serviço</label>
+            <label className="text-[13px] font-bold text-[#64748B] mb-2 block font-dmsans uppercase tracking-wide">Nome do serviço</label>
             <input
               required
-              className="w-full px-5 py-4 rounded-2xl bg-[#F8F9FA] border border-transparent text-sm font-medium focus:bg-white focus:ring-2 focus:ring-blue-500/10 focus:border-blue-500/20 transition-all outline-none placeholder:text-gray-400"
+              className="w-full bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl px-4 py-3 text-[14px] text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all font-dmsans placeholder:text-gray-400"
               placeholder="Ex: Gestão de Tráfego Pago"
               value={form.nome}
               onChange={e => setForm(f => ({ ...f, nome: e.target.value }))}
@@ -362,9 +362,9 @@ function ServiceModal({ service, onClose, onSuccess }: {
           {/* Row: Categoria + Cobrança */}
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="text-[11px] font-bold uppercase tracking-widest text-gray-400 mb-2 block ml-1">Categoria</label>
+              <label className="text-[13px] font-bold text-[#64748B] mb-2 block font-dmsans uppercase tracking-wide">Categoria</label>
               <select
-                className="w-full px-5 py-4 rounded-2xl bg-[#F8F9FA] border border-transparent text-sm font-medium focus:bg-white focus:ring-2 focus:ring-blue-500/10 focus:border-blue-500/20 transition-all outline-none appearance-none cursor-pointer"
+                className="w-full bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl px-4 py-3 text-[14px] text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all font-dmsans appearance-none cursor-pointer"
                 value={form.categoria}
                 onChange={e => setForm(f => ({ ...f, categoria: e.target.value }))}
               >
@@ -372,9 +372,9 @@ function ServiceModal({ service, onClose, onSuccess }: {
               </select>
             </div>
             <div>
-              <label className="text-[11px] font-bold uppercase tracking-widest text-gray-400 mb-2 block ml-1">Cobrança</label>
+              <label className="text-[13px] font-bold text-[#64748B] mb-2 block font-dmsans uppercase tracking-wide">Cobrança</label>
               <select
-                className="w-full px-5 py-4 rounded-2xl bg-[#F8F9FA] border border-transparent text-sm font-medium focus:bg-white focus:ring-2 focus:ring-blue-500/10 focus:border-blue-500/20 transition-all outline-none appearance-none cursor-pointer"
+                className="w-full bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl px-4 py-3 text-[14px] text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all font-dmsans appearance-none cursor-pointer"
                 value={form.tipo_cobranca}
                 onChange={e => setForm(f => ({ ...f, tipo_cobranca: e.target.value }))}
               >
@@ -385,9 +385,9 @@ function ServiceModal({ service, onClose, onSuccess }: {
 
           {/* Preço */}
           <div>
-            <label className="text-[11px] font-bold uppercase tracking-widest text-gray-400 mb-2 block ml-1">Preço base</label>
+            <label className="text-[13px] font-bold text-[#64748B] mb-2 block font-dmsans uppercase tracking-wide">Preço base</label>
             <input
-              className="w-full px-5 py-4 rounded-2xl bg-[#F8F9FA] border border-transparent text-sm font-bold focus:bg-white focus:ring-2 focus:ring-blue-500/10 focus:border-blue-500/20 transition-all outline-none placeholder:text-gray-400 text-gray-900"
+              className="w-full bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl px-4 py-3 text-[14px] text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all font-dmsans placeholder:text-gray-400"
               placeholder="R$ 0"
               value={displayPrice}
               onChange={e => handlePriceInput(e.target.value)}
@@ -396,7 +396,7 @@ function ServiceModal({ service, onClose, onSuccess }: {
 
           {/* Cor */}
           <div>
-            <label className="text-[11px] font-bold uppercase tracking-widest text-gray-400 mb-2 block ml-1">Cor de identificação</label>
+            <label className="text-[12px] font-bold uppercase tracking-widest text-gray-400 mb-2 block ml-1">Cor de identificação</label>
             <div className="flex gap-3 pt-1">
               {COLORS.map(c => (
                 <button
@@ -420,10 +420,10 @@ function ServiceModal({ service, onClose, onSuccess }: {
 
           {/* Descrição */}
           <div>
-            <label className="text-[11px] font-bold uppercase tracking-widest text-gray-400 mb-2 block ml-1">Descrição</label>
+            <label className="text-[13px] font-bold text-[#64748B] mb-2 block font-dmsans uppercase tracking-wide">Descrição</label>
             <textarea
               rows={4}
-              className="w-full px-5 py-4 rounded-2xl bg-[#F8F9FA] border border-transparent text-sm font-medium focus:bg-white focus:ring-2 focus:ring-blue-500/10 focus:border-blue-500/20 transition-all outline-none placeholder:text-gray-400 resize-none"
+              className="w-full bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl px-4 py-3 text-[14px] text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all font-dmsans placeholder:text-gray-400 resize-none"
               placeholder="Descreva o que está incluso no serviço..."
               value={form.descricao || ''}
               onChange={e => setForm(f => ({ ...f, descricao: e.target.value }))}

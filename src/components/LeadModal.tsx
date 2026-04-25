@@ -100,8 +100,8 @@ export function LeadModal({ isOpen, onClose, onSuccess }: LeadModalProps) {
     setDisplayValue(num > 0 ? `R$ ${num.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : '');
   };
 
-  const lbl = "text-[10px] font-bold uppercase tracking-widest text-gray-500 mb-3 block ml-1";
-  const inI = "w-full px-5 py-4 rounded-2xl bg-[#F8F9FA] border border-transparent text-sm font-medium text-gray-900 focus:ring-2 focus:ring-[#007AFF]/10 focus:border-[#007AFF]/20 focus:bg-white outline-none transition-all placeholder:text-gray-400";
+  const lbl = "text-[13px] font-bold text-[#64748B] mb-2 block font-dmsans uppercase tracking-wide";
+  const inI = "w-full bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl px-4 py-3 text-[14px] text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all font-dmsans placeholder:text-gray-400";
   
   const serviceColors: Record<string, { bg: string, border: string, text: string }> = {
     'Tráfego Pago': { bg: 'bg-blue-50', border: 'border-blue-200', text: 'text-blue-600' },

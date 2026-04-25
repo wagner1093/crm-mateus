@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Plus_Jakarta_Sans, DM_Mono } from "next/font/google";
+import { Plus_Jakarta_Sans, DM_Mono, DM_Sans } from "next/font/google";
 import "./globals.css";
 import { Sidebar } from "@/components/Sidebar";
 import { Toaster } from "react-hot-toast";
@@ -16,6 +16,12 @@ const dmMono = DM_Mono({
   weight: ["400", "500"]
 });
 
+const dmSans = DM_Sans({
+  subsets: ["latin"],
+  variable: "--font-dmsans",
+  weight: ["400", "500", "700"]
+});
+
 export const metadata: Metadata = {
   title: "CRM Mateus",
   description: "Modern CRM for High Performance Teams",
@@ -28,7 +34,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="pt-BR">
-      <body className={`${jakarta.variable} ${dmMono.variable} font-sans antialiased bg-[#F7F7F8] min-h-screen selection:bg-blue-100`}>
+      <body className={`${jakarta.variable} ${dmMono.variable} ${dmSans.variable} font-sans antialiased bg-[#F7F7F8] min-h-screen selection:bg-blue-100`}>
         <Sidebar />
         <main className="pl-[78px] min-h-screen transition-all duration-300">
           <div className="p-5 md:p-7">

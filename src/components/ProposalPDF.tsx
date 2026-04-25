@@ -24,9 +24,9 @@ const styles = StyleSheet.create({
 })
 
 export default function ProposalPDF({ proposal, organization }: { proposal: any, organization?: any }) {
-  const companyName = organization?.name || 'Empresa'
-  const companyDescription = organization?.description || 'Soluções em Negócios'
-  const logoUrl = organization?.logo_url
+  const companyName = organization?.nome || 'Empresa';
+  const companyDescription = organization?.descricao || 'Soluções em Negócios';
+  const logoUrl = organization?.logo_url;
 
   return (
     <Document>
@@ -54,53 +54,47 @@ export default function ProposalPDF({ proposal, organization }: { proposal: any,
           <Text style={styles.sectionTitle}>Dados do Cliente e Negócio</Text>
           <View style={styles.row}>
             <Text style={styles.label}>Cliente:</Text>
-            <Text style={styles.value}>{proposal.customer_name}</Text>
+            <Text style={styles.value}>{proposal.cliente_nome}</Text>
           </View>
           <View style={styles.row}>
-            <Text style={styles.label}>Projeto / Ref:</Text>
-            <Text style={styles.value}>{proposal.vehicle_model || 'Projeto Personalizado'}</Text>
+            <Text style={styles.label}>Serviço:</Text>
+            <Text style={styles.value}>{proposal.servico?.nome || 'Serviço Personalizado'}</Text>
           </View>
           <View style={styles.row}>
-            <Text style={styles.label}>Nível / Categoria:</Text>
-            <Text style={styles.value}>{proposal.armor_level || 'Padrão'}</Text>
+            <Text style={styles.label}>Válido até:</Text>
+            <Text style={styles.value}>{new Date(proposal.data_validade).toLocaleDateString('pt-BR')}</Text>
           </View>
           <View style={styles.row}>
-            <Text style={styles.label}>Validade:</Text>
-            <Text style={styles.value}>{proposal.validity_days} dias</Text>
+            <Text style={styles.label}>Pagamento:</Text>
+            <Text style={styles.value}>{proposal.modo_pagamento || 'A combinar'}</Text>
           </View>
         </View>
 
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Descrição dos Serviços e Itens</Text>
+          <Text style={styles.sectionTitle}>Investimento</Text>
           <View style={styles.tableHeader}>
             <Text style={styles.colDesc}>Descrição</Text>
-            <Text style={styles.colQtd}>Qtd</Text>
-            <Text style={styles.colPrice}>Vlr. Unitário</Text>
             <Text style={styles.colTotal}>Total</Text>
           </View>
-          {proposal.items.map((item: any, idx: number) => (
-            <View key={idx} style={styles.tableRow}>
-              <Text style={styles.colDesc}>{item.description}</Text>
-              <Text style={styles.colQtd}>{item.quantity}</Text>
-              <Text style={styles.colPrice}>R$ {Number(item.unit_price).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</Text>
-              <Text style={styles.colTotal}>R$ {(item.quantity * item.unit_price).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</Text>
-            </View>
-          ))}
+          <View style={styles.tableRow}>
+            <Text style={styles.colDesc}>{proposal.servico?.nome || 'Serviço Personalizado'}</Text>
+            <Text style={styles.colTotal}>R$ {Number(proposal.valor).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</Text>
+          </View>
           <View style={styles.totalBox}>
-            <Text style={styles.totalText}>Valor Total: R$ {Number(proposal.total_value).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</Text>
+            <Text style={styles.totalText}>Valor Total: R$ {Number(proposal.valor).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</Text>
           </View>
         </View>
 
-        {proposal.notes && (
+        {proposal.observacoes && (
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Observações Gerais</Text>
-            <Text style={{ fontStyle: 'italic', color: '#64748B' }}>{proposal.notes}</Text>
+            <Text style={styles.sectionTitle}>Escopo / Observações</Text>
+            <Text style={{ fontStyle: 'italic', color: '#64748B' }}>{proposal.observacoes}</Text>
           </View>
         )}
 
         <View style={styles.signatureArea}>
           <View style={styles.signatureLine}>
-            <Text>{proposal.customer_name}</Text>
+            <Text>{proposal.cliente_nome}</Text>
             <Text style={{ color: '#64748B', fontSize: 8 }}>Cliente</Text>
           </View>
           <View style={styles.signatureLine}>

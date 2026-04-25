@@ -22,6 +22,8 @@ export default function ClientesClient() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
   const [selectedClient, setSelectedClient] = useState<any>(null);
+  const [filterStatus, setFilterStatus] = useState<string | null>(null);
+  const [showFilter, setShowFilter] = useState(false);
 
   useEffect(() => {
     fetchClients();
@@ -59,10 +61,34 @@ export default function ClientesClient() {
     }
   };
 
-  const filteredClients = clients.filter(c => 
-    c.nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    c.email?.toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredClients = clients.filter(c =>
+    (c.nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    c.email?.toLowerCase().includes(searchTerm.toLowerCase())) &&
+    (!filterStatus || c.status === filterStatus)
   );
+
+  const handleDownloadCSV = () => {
+    const rows = [
+      ['Nome', 'E-mail', 'WhatsApp', 'Status', 'Recorrência', 'Desde'],
+      ...clients.map(c => [
+        c.nome,
+        c.email || '',
+        c.whatsapp || '',
+        c.status || '',
+        c.valor_recorrente?.toLocaleString('pt-BR', { minimumFractionDigits: 2 }) || '0',
+        format(new Date(c.created_at), 'dd/MM/yyyy', { locale: ptBR })
+      ])
+    ];
+    const csv = rows.map(r => r.map(v => `"${String(v).replace(/"/g, '""')}"`).join(',')).join('\n');
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `clientes_${format(new Date(), 'dd-MM-yyyy')}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+    toast.success('CSV exportado com sucesso!');
+  };
 
   return (
     <div className="space-y-6 pb-10">
@@ -74,14 +100,14 @@ export default function ClientesClient() {
           <p className="text-muted-foreground text-sm font-medium mt-1">Gerencie sua base de clientes ativos e recorrentes.</p>
         </div>
         <div className="flex items-center gap-3">
-          <button className="p-3 rounded-2xl bg-white shadow-sm border border-gray-100 text-gray-500 hover:text-primary transition-all">
+          <button onClick={handleDownloadCSV} className="p-3 rounded-2xl bg-white shadow-sm border border-gray-100 text-gray-500 hover:text-primary transition-all" title="Exportar CSV">
             <Download className="w-5 h-5" />
           </button>
           <button 
             onClick={() => { setSelectedClient(null); setIsModalOpen(true); }}
-            className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-2xl font-bold text-xs flex items-center gap-2 transition-all shadow-lg shadow-blue-200 active:scale-95"
+            className="bg-[#1C1C1E] text-white px-6 py-2.5 rounded-2xl text-sm font-bold flex items-center gap-2 hover:bg-black transition-all shadow-lg active:scale-95"
           >
-            <Plus className="w-5 h-5" />
+            <Plus className="w-4 h-4" />
             <span>Novo Cliente</span>
           </button>
         </div>
@@ -93,15 +119,31 @@ export default function ClientesClient() {
           <input 
             type="text" 
             placeholder="Buscar por nome, e-mail ou WhatsApp..." 
-            className="w-full pl-10 pr-4 py-3 rounded-xl bg-white border-none text-sm focus:ring-2 focus:ring-primary/20 shadow-sm"
+            className="w-full pl-10 pr-4 py-3 rounded-xl bg-[#F8FAFC] border border-[#E2E8F0] text-sm font-dmsans focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all outline-none"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
         </div>
-        <button className="flex items-center gap-2 px-5 py-3 rounded-xl bg-white border border-gray-100 text-xs font-bold text-gray-600 hover:bg-gray-50 transition-all shadow-sm">
-          <Filter className="w-4 h-4" />
-          <span>Filtros</span>
-        </button>
+        <div className="relative">
+          <button
+            onClick={() => setShowFilter(p => !p)}
+            className={cn('flex items-center gap-2 px-5 py-3 rounded-xl border text-xs font-bold transition-all shadow-sm', showFilter || filterStatus ? 'bg-primary text-white border-primary' : 'bg-white border-gray-100 text-gray-600 hover:bg-gray-50')}
+          >
+            <Filter className="w-4 h-4" />
+            <span>Filtros {filterStatus ? `(${filterStatus})` : ''}</span>
+          </button>
+          {showFilter && (
+            <div className="absolute top-full mt-2 right-0 bg-white border border-gray-100 rounded-2xl shadow-xl p-3 z-50 flex flex-col gap-1 w-44">
+              {['Todos', 'Ativo', 'Inativo'].map(s => (
+                <button
+                  key={s}
+                  onClick={() => { setFilterStatus(s === 'Todos' ? null : s); setShowFilter(false); }}
+                  className={cn('text-left px-4 py-2.5 rounded-xl text-xs font-bold uppercase tracking-widest transition-all', filterStatus === s || (s === 'Todos' && !filterStatus) ? 'bg-gray-900 text-white' : 'hover:bg-gray-50 text-gray-600')}
+                >{s}</button>
+              ))}
+            </div>
+          )}
+        </div>
       </div>
 
       <div className="bg-white border border-gray-100 rounded-[40px] shadow-sm overflow-hidden">

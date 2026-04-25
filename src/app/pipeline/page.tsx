@@ -102,7 +102,7 @@ function CardBody({ lead, onEdit, onDelete }: { lead: Lead; onEdit?: () => void;
               className="flex items-center gap-1.5 px-2 py-1 rounded-lg bg-gray-100 text-gray-500 hover:bg-blue-50 hover:text-blue-500 transition-all duration-150 group"
             >
               <PenLine className="w-3.5 h-3.5" />
-              <span className="text-[11px] font-semibold max-w-0 overflow-hidden group-hover:max-w-[40px] transition-all duration-200 whitespace-nowrap">Editar</span>
+              <span className="text-[12px] font-semibold max-w-0 overflow-hidden group-hover:max-w-[40px] transition-all duration-200 whitespace-nowrap">Editar</span>
             </button>
             {menuOpen && (
               <div className="absolute right-0 top-7 bg-white border border-gray-100 rounded-xl shadow-xl z-40 w-32 py-1">
@@ -318,10 +318,10 @@ function EditModal({ lead, onClose, onSave, availableServices }: {
     setSaving(false);
   };
 
-  const lbl = "text-[10px] font-bold uppercase tracking-widest text-gray-500 mb-3 block ml-1";
-  const inI = "w-full px-5 py-4 rounded-2xl bg-[#F8F9FA] border border-transparent text-sm font-medium text-gray-900 focus:ring-2 focus:ring-[#007AFF]/10 focus:border-[#007AFF]/20 focus:bg-white outline-none transition-all placeholder:text-gray-400";
+  const lbl = "text-[13px] font-bold text-[#64748B] mb-2 block font-dmsans uppercase tracking-wide";
+  const inI = "w-full bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl px-4 py-3 text-[14px] text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all font-dmsans placeholder:text-gray-400";
   const tabBtn = (active: boolean) => cn(
-    "flex-1 flex items-center justify-center gap-3 py-5 transition-all text-[11px] font-bold uppercase tracking-widest relative",
+    "flex-1 flex items-center justify-center gap-3 py-5 transition-all text-[12px] font-bold uppercase tracking-widest relative",
     active ? "text-blue-600" : "text-gray-400 hover:text-gray-600"
   );
 
@@ -638,6 +638,10 @@ export default function PipelinePage() {
     } catch { toast.error('Erro ao salvar.'); fetchLeads(); }
   };
 
+  const [viewMode, setViewMode] = useState<'kanban' | 'list'>('kanban');
+  const [filterTemp, setFilterTemp] = useState<string | null>(null);
+  const [showFilter, setShowFilter] = useState(false);
+
   const handleDelete = (id: string) => {
     setDeleteConfirmId(id);
   };
@@ -665,19 +669,60 @@ export default function PipelinePage() {
           </div>
         </div>
         <div className="flex items-center gap-2">
-          {[LayoutGrid, AlignJustify, SlidersHorizontal].map((Icon, i) => (
-            <button key={i} className="p-2 rounded-xl border border-gray-200 text-gray-400 hover:text-gray-700 hover:bg-gray-50 transition-colors">
-              <Icon className="w-4 h-4" />
-            </button>
-          ))}
+          <button
+            key={0}
+            onClick={() => setViewMode('kanban')}
+            className={cn('p-2 rounded-xl border transition-colors', viewMode === 'kanban' ? 'border-gray-900 text-gray-900 bg-gray-50' : 'border-gray-200 text-gray-400 hover:text-gray-700 hover:bg-gray-50')}
+          >
+            <LayoutGrid className="w-4 h-4" />
+          </button>
+          <button
+            key={1}
+            onClick={() => setViewMode('list')}
+            className={cn('p-2 rounded-xl border transition-colors', viewMode === 'list' ? 'border-gray-900 text-gray-900 bg-gray-50' : 'border-gray-200 text-gray-400 hover:text-gray-700 hover:bg-gray-50')}
+          >
+            <AlignJustify className="w-4 h-4" />
+          </button>
+          <button
+            key={2}
+            onClick={() => setShowFilter(p => !p)}
+            className={cn('p-2 rounded-xl border transition-colors', showFilter ? 'border-gray-900 text-gray-900 bg-gray-50' : 'border-gray-200 text-gray-400 hover:text-gray-700 hover:bg-gray-50')}
+          >
+            <SlidersHorizontal className="w-4 h-4" />
+          </button>
           <button onClick={() => setIsLeadModalOpen(true)}
-            className="flex items-center gap-2 px-4 py-2 rounded-xl bg-gray-900 text-white text-[13px] font-semibold hover:bg-gray-800 transition-colors ml-1">
+            className="bg-[#1C1C1E] text-white px-6 py-2.5 rounded-2xl text-sm font-bold flex items-center gap-2 hover:bg-black transition-all shadow-lg active:scale-95 ml-1">
             <Plus className="w-4 h-4" /> Novo Lead
           </button>
         </div>
       </div>
 
+      {/* ── Filter Bar (shown when SlidersHorizontal is active) ── */}
+      {showFilter && (
+        <div className="flex items-center gap-3 px-2">
+          <span className="text-[12px] font-black uppercase tracking-widest text-gray-400">Temperatura:</span>
+          {['Quente', 'Morno', 'Frio'].map(t => (
+            <button
+              key={t}
+              onClick={() => setFilterTemp(prev => prev === t ? null : t)}
+              className={cn(
+                'px-4 py-2 rounded-xl text-[12px] font-black uppercase tracking-widest border transition-all',
+                filterTemp === t
+                  ? t === 'Quente' ? 'bg-red-500 text-white border-red-500'
+                  : t === 'Morno' ? 'bg-amber-500 text-white border-amber-500'
+                  : 'bg-blue-500 text-white border-blue-500'
+                  : 'bg-white text-gray-400 border-gray-200 hover:border-gray-300'
+              )}
+            >{t}</button>
+          ))}
+          {filterTemp && (
+            <button onClick={() => setFilterTemp(null)} className="text-[12px] font-black text-gray-400 hover:text-gray-700 uppercase tracking-widest">Limpar</button>
+          )}
+        </div>
+      )}
+
       {/* ── Board ── */}
+      {viewMode === 'kanban' && (
       <div className="flex-1 overflow-x-auto pb-2">
         {loading ? (
           <div className="flex items-center justify-center h-full text-gray-400 text-sm italic">Carregando...</div>
@@ -687,7 +732,7 @@ export default function PipelinePage() {
             <div className="flex gap-4 h-full items-start min-w-max">
               {COLUMNS.map(col => (
                 <KanbanColumn key={col.id} col={col}
-                  leads={leads.filter(l => l.etapa === col.id)}
+                  leads={leads.filter(l => l.etapa === col.id && (!filterTemp || l.temperatura === filterTemp))}
                   isOver={overColumnId === col.id}
                   onAdd={() => setIsLeadModalOpen(true)}
                   onEdit={setEditingLead}
@@ -704,6 +749,53 @@ export default function PipelinePage() {
           </DndContext>
         ) : null}
       </div>
+      )}
+
+      {/* ── List View ── */}
+      {viewMode === 'list' && !loading && (
+        <div className="flex-1 overflow-auto pb-2">
+          <div className="bg-white rounded-[32px] border border-gray-100 shadow-sm overflow-hidden">
+            <table className="w-full text-left">
+              <thead className="bg-gray-50/50 border-b border-gray-100">
+                <tr>
+                  {['Lead', 'Etapa', 'Temperatura', 'Valor Estimado', 'Serviços', 'Ações'].map(h => (
+                    <th key={h} className="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-[0.2em]">{h}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-50">
+                {leads.filter(l => !filterTemp || l.temperatura === filterTemp).map(lead => (
+                  <tr key={lead.id} className="hover:bg-gray-50/50 transition-all group">
+                    <td className="px-6 py-4">
+                      <p className="font-bold text-gray-900 text-sm">{lead.nome}</p>
+                      <p className="text-[12px] text-gray-400 font-medium mt-0.5">{lead.contato || lead.email || '—'}</p>
+                    </td>
+                    <td className="px-6 py-4">
+                      <span className="px-3 py-1 rounded-lg bg-gray-100 text-[12px] font-black uppercase tracking-widest text-gray-600">{lead.etapa}</span>
+                    </td>
+                    <td className="px-6 py-4"><Badge t={lead.temperatura} /></td>
+                    <td className="px-6 py-4 font-bold text-gray-900 text-sm">{fmt(lead.valor_estimado)}</td>
+                    <td className="px-6 py-4">
+                      <div className="flex flex-wrap gap-1">
+                        {lead.servico_interesse?.slice(0, 2).map((s: string) => (
+                          <span key={s} className="px-2 py-0.5 rounded-md bg-blue-50 text-blue-600 text-[10px] font-black">{s}</span>
+                        ))}
+                        {(lead.servico_interesse?.length || 0) > 2 && <span className="text-[10px] text-gray-400 font-bold">+{(lead.servico_interesse?.length || 0) - 2}</span>}
+                      </div>
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-all">
+                        <button onClick={() => setEditingLead(lead)} className="p-2 rounded-xl bg-blue-50 text-blue-500 hover:bg-blue-500 hover:text-white transition-all"><Pencil className="w-3.5 h-3.5" /></button>
+                        <button onClick={() => handleDelete(lead.id)} className="p-2 rounded-xl bg-rose-50 text-rose-500 hover:bg-rose-500 hover:text-white transition-all"><Trash2 className="w-3.5 h-3.5" /></button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
 
       {/* ── Modals ── */}
       <LeadModal isOpen={isLeadModalOpen} onClose={() => setIsLeadModalOpen(false)} onSuccess={fetchLeads} />

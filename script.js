@@ -1,0 +1,1 @@
+const fs=require('fs');const lines=fs.readFileSync('C:/Users/Wagner/.gemini/antigravity/brain/3beb45d7-92db-4483-9a3f-8329ddbd422e/.system_generated/logs/overview.txt','utf8').split('\n');for(let l of lines){if(l.includes('"step_index":3360')){const data=JSON.parse(l);fs.writeFileSync('target.txt',data.tool_calls[0].args.TargetContent);break;}}

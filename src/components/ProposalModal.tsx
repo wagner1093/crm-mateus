@@ -25,7 +25,8 @@ export function ProposalModal({ isOpen, onClose, onSuccess, proposal }: Proposal
     valor: 0,
     status: 'Rascunho',
     data_validade: new Date(Date.now() + 15 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-    observacoes: ''
+    observacoes: '',
+    modo_pagamento: ''
   });
   const [mounted, setMounted] = useState(false);
 
@@ -41,7 +42,8 @@ export function ProposalModal({ isOpen, onClose, onSuccess, proposal }: Proposal
         valor: proposal.valor || 0,
         status: proposal.status || 'Rascunho',
         data_validade: proposal.data_validade || new Date(Date.now() + 15 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-        observacoes: proposal.observacoes || ''
+        observacoes: proposal.observacoes || '',
+        modo_pagamento: proposal.modo_pagamento || ''
       });
     } else {
       setFormData({
@@ -50,7 +52,8 @@ export function ProposalModal({ isOpen, onClose, onSuccess, proposal }: Proposal
         valor: 0,
         status: 'Rascunho',
         data_validade: new Date(Date.now() + 15 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-        observacoes: ''
+        observacoes: '',
+        modo_pagamento: ''
       });
     }
   }, [proposal, isOpen]);
@@ -111,8 +114,8 @@ export function ProposalModal({ isOpen, onClose, onSuccess, proposal }: Proposal
 
   if (!mounted) return null;
 
-  const lbl = "text-[11px] font-bold uppercase tracking-wider text-gray-400 mb-2 block";
-  const inI = "w-full px-4 py-3 rounded-xl bg-white border border-gray-200 text-sm font-semibold text-gray-900 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all";
+  const lbl = "text-[13px] font-bold text-[#64748B] mb-2 block font-dmsans uppercase tracking-wide";
+  const inI = "w-full bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl px-4 py-3 text-[14px] text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all font-dmsans placeholder:text-gray-400";
 
   const statusOptions = [
     { key: 'Rascunho', icon: Clock },
@@ -220,6 +223,22 @@ export function ProposalModal({ isOpen, onClose, onSuccess, proposal }: Proposal
                     value={formData.data_validade}
                     onChange={e => setFormData({...formData, data_validade: e.target.value})}
                   />
+                </div>
+
+                {/* Modo de Pagamento */}
+                <div>
+                  <label className={lbl}>Modo de Pagamento</label>
+                  <select
+                    className={inI + " appearance-none cursor-pointer"}
+                    value={formData.modo_pagamento}
+                    onChange={e => setFormData({...formData, modo_pagamento: e.target.value})}
+                  >
+                    <option value="">Selecione...</option>
+                    <option value="A vista (PIX/Boleto)">A vista (PIX/Boleto)</option>
+                    <option value="Cartão de Crédito">Cartão de Crédito</option>
+                    <option value="Parcelado (Boleto)">Parcelado (Boleto)</option>
+                    <option value="A combinar">A combinar</option>
+                  </select>
                 </div>
 
                 {/* Status */}

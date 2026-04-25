@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useMemo } from 'react';
+import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { 
   TrendingUp, TrendingDown, Wallet, Users, DollarSign, Target, Plus, Search, Filter, 
@@ -25,6 +26,7 @@ export default function DashboardPage() {
   const [clientsData, setClientsData] = useState<any[]>([]);
   const [financeData, setFinanceData] = useState<any[]>([]);
   const [timeRange, setTimeRange] = useState('6m');
+  const router = useRouter();
 
   
   const [kpiData, setKpiData] = useState([
@@ -75,7 +77,10 @@ export default function DashboardPage() {
         ...(clients.slice(0, 5).map(c => ({ type: 'client', title: `Novo Cliente: ${c.nome}`, time: c.created_at, icon: Users, color: 'bg-blue-100 text-blue-600' })))
       ].sort((a, b) => new Date(b.time).getTime() - new Date(a.time).getTime()).slice(0, 5);
 
-      setRecentActivity(activities);
+      setRecentActivity(activities.map(a => ({
+        ...a,
+        timeFormatted: format(new Date(a.time), "dd 'de' MMM 'às' HH:mm", { locale: ptBR })
+      })));
 
     } catch (err) {
       console.error('Erro no Dashboard:', err);
@@ -181,7 +186,7 @@ export default function DashboardPage() {
               </div>
               
               <div>
-                <p className="text-[11px] font-black uppercase tracking-widest text-gray-400 mb-2">{item.label}</p>
+                <p className="text-[12px] font-black uppercase tracking-widest text-gray-400 mb-2">{item.label}</p>
                 <div className="flex items-baseline gap-0.5">
                   <span className="text-3xl font-bold tracking-tighter text-[#111118]">
                     R$ {Math.floor(item.value).toLocaleString('pt-BR')}
@@ -207,7 +212,7 @@ export default function DashboardPage() {
                 <div className="p-1.5 bg-blue-50 rounded-lg border border-blue-100">
                   <Target className="w-4 h-4 text-blue-600" />
                 </div>
-                <span className="text-[11px] font-black uppercase tracking-widest text-gray-400">Meta Mensal</span>
+                <span className="text-[12px] font-black uppercase tracking-widest text-gray-400">Meta Mensal</span>
               </div>
               <h3 className="text-xl font-bold tracking-tight text-[#111118]">Meta de Faturamento</h3>
             </div>
@@ -219,7 +224,7 @@ export default function DashboardPage() {
           <div className="relative z-10 my-6 flex-1 flex flex-col justify-center">
             <div className="flex justify-between items-end mb-4">
               <div>
-                <p className="text-[11px] font-black uppercase tracking-widest text-gray-400 mb-1">Realizado</p>
+                <p className="text-[12px] font-black uppercase tracking-widest text-gray-400 mb-1">Realizado</p>
                 <div className="flex items-baseline gap-1">
                   <span className="text-3xl font-bold tracking-tighter text-[#111118]">R$ {financialStats.receitas.toLocaleString('pt-BR')}</span>
                   <span className="text-sm font-bold text-gray-400">/ R$ 50k</span>
@@ -258,7 +263,7 @@ export default function DashboardPage() {
             <div>
               <div className="flex items-center gap-2 mb-1">
                 <div className="w-2 h-2 rounded-full bg-[#34C759] animate-pulse" />
-                <span className="text-[11px] font-black uppercase tracking-widest text-gray-400">Ao Vivo</span>
+                <span className="text-[12px] font-black uppercase tracking-widest text-gray-400">Ao Vivo</span>
               </div>
               <h3 className="text-xl font-bold text-[#111118] tracking-tight">Evolução de Receita</h3>
               <p className="text-sm font-medium text-gray-400 mt-0.5">Entradas vs. A Receber — últimos {timeRange === '6m' ? '6' : '12'} meses</p>
@@ -331,7 +336,7 @@ export default function DashboardPage() {
           <div className="relative z-10 mb-6">
             <div className="flex items-center gap-2 mb-1">
               <div className="w-2 h-2 rounded-full bg-blue-400" />
-              <span className="text-[11px] font-black uppercase tracking-widest text-gray-400">Pipeline</span>
+              <span className="text-[12px] font-black uppercase tracking-widest text-gray-400">Pipeline</span>
             </div>
             <h3 className="text-xl font-bold text-[#111118] tracking-tight">Funil de Vendas</h3>
             <p className="text-sm font-medium text-gray-400 mt-0.5">{pipelineStats.total} leads no total</p>
@@ -344,7 +349,7 @@ export default function DashboardPage() {
               { label: 'Fechados', value: pipelineStats.fechados, from: 'from-emerald-400', to: 'to-teal-500', bg: 'bg-emerald-50', text: 'text-emerald-600', total: pipelineStats.total },
             ].map((item, i) => (
               <div key={i}>
-                <div className="flex justify-between text-[11px] font-black uppercase tracking-widest mb-2">
+                <div className="flex justify-between text-[12px] font-black uppercase tracking-widest mb-2">
                   <span className="text-gray-400">{item.label}</span>
                   <span className={`${item.text} font-black`}>{item.value}</span>
                 </div>
@@ -364,7 +369,7 @@ export default function DashboardPage() {
           <div className="relative z-10">
             <div className="flex items-center gap-2 mb-1">
               <div className="w-2 h-2 rounded-full bg-blue-400" />
-              <span className="text-[11px] font-black uppercase tracking-widest text-gray-400">Conversão</span>
+              <span className="text-[12px] font-black uppercase tracking-widest text-gray-400">Conversão</span>
             </div>
             <h3 className="text-xl font-bold text-[#111118] tracking-tight">Taxa de Sucesso</h3>
           </div>
@@ -389,7 +394,7 @@ export default function DashboardPage() {
           <div className="text-center relative z-10">
             <div className="inline-flex items-center gap-2 bg-blue-50 border border-blue-100 px-4 py-2 rounded-full">
               <span className="text-sm font-black text-blue-700">{clientsData.length}</span>
-              <span className="text-[11px] font-black uppercase tracking-widest text-blue-400">Clientes Ativos</span>
+              <span className="text-[12px] font-black uppercase tracking-widest text-blue-400">Clientes Ativos</span>
             </div>
           </div>
         </div>
@@ -445,18 +450,18 @@ export default function DashboardPage() {
                 Cadastrar Lead
               </button>
               
-              <button className="w-full bg-white/10 hover:bg-white/20 backdrop-blur-lg border border-white/20 transition-all duration-300 p-3.5 rounded-[20px] flex items-center gap-3 text-sm font-bold group shadow-sm hover:shadow-md hover:-translate-y-0.5">
+              <button onClick={() => router.push('/clientes')} className="w-full bg-white/10 hover:bg-white/20 backdrop-blur-lg border border-white/20 transition-all duration-300 p-3.5 rounded-[20px] flex items-center gap-3 text-sm font-bold group shadow-sm hover:shadow-md hover:-translate-y-0.5">
                 <div className="bg-white/20 p-2 rounded-xl group-hover:bg-white/30 transition-colors border border-white/10">
                   <Users className="w-4 h-4 text-white" />
                 </div>
                 Novo Cliente
               </button>
               
-              <button className="w-full bg-white/10 hover:bg-white/20 backdrop-blur-lg border border-white/20 transition-all duration-300 p-3.5 rounded-[20px] flex items-center gap-3 text-sm font-bold group shadow-sm hover:shadow-md hover:-translate-y-0.5">
+              <button onClick={() => router.push('/financeiro')} className="w-full bg-white/10 hover:bg-white/20 backdrop-blur-lg border border-white/20 transition-all duration-300 p-3.5 rounded-[20px] flex items-center gap-3 text-sm font-bold group shadow-sm hover:shadow-md hover:-translate-y-0.5">
                 <div className="bg-white/20 p-2 rounded-xl group-hover:bg-white/30 transition-colors border border-white/10">
                   <DollarSign className="w-4 h-4 text-sky-200" />
                 </div>
-                Receita
+                Financeiro
               </button>
             </div>
           </div>
@@ -474,11 +479,11 @@ export default function DashboardPage() {
             <div>
               <div className="flex items-center gap-2 mb-1">
                 <div className="w-2 h-2 rounded-full bg-blue-400" />
-                <span className="text-[11px] font-black uppercase tracking-widest text-gray-400">Recente</span>
+                <span className="text-[12px] font-black uppercase tracking-widest text-gray-400">Recente</span>
               </div>
               <h3 className="text-xl font-bold text-[#111118] tracking-tight">Atividade Recente</h3>
             </div>
-            <button className="text-[10px] font-black uppercase tracking-widest text-blue-500 bg-blue-50 border border-blue-100 px-4 py-2 rounded-full hover:bg-blue-100 transition-colors">Ver tudo</button>
+            <button onClick={() => router.push('/pipeline')} className="text-[10px] font-black uppercase tracking-widest text-blue-500 bg-blue-50 border border-blue-100 px-4 py-2 rounded-full hover:bg-blue-100 transition-colors">Ver tudo</button>
           </div>
           
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 relative z-10">
@@ -501,8 +506,8 @@ export default function DashboardPage() {
                     </div>
                     <div>
                       <p className="text-sm font-bold text-[#111118] tracking-tight leading-tight">{activity.title}</p>
-                      <p className="text-[11px] font-medium text-gray-400 mt-1 uppercase tracking-wider flex items-center gap-1.5">
-                        <Clock className="w-3 h-3" /> {activity.time}
+                      <p className="text-[12px] font-medium text-gray-400 mt-1 uppercase tracking-wider flex items-center gap-1.5">
+                        <Clock className="w-3 h-3" /> {activity.timeFormatted || format(new Date(activity.time), "dd/MM/yyyy HH:mm", { locale: ptBR })}
                       </p>
                     </div>
                   </div>

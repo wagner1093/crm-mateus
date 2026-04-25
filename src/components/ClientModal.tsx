@@ -83,8 +83,8 @@ export function ClientModal({ isOpen, onClose, onSuccess, client }: ClientModalP
     }
   };
 
-  const lbl = "text-[11px] font-bold uppercase tracking-wider text-gray-400 mb-2 block";
-  const inI = "w-full px-4 py-3 rounded-xl bg-white border border-gray-200 text-sm font-semibold text-gray-900 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all";
+  const lbl = "text-[13px] font-bold text-[#64748B] mb-2 block font-dmsans uppercase tracking-wide";
+  const inI = "w-full bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl px-4 py-3 text-[14px] text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all font-dmsans placeholder:text-gray-400";
 
   return createPortal(
     <AnimatePresence>

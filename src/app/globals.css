@@ -117,7 +117,7 @@ h1, h2, h3, h4, h5 {
   /* Badge */
   .badge {
     @apply inline-flex items-center gap-1 px-2 py-0.5 rounded-md
-           text-[11px] font-semibold tracking-wide;
+           text-[12px] font-semibold tracking-wide;
   }
 
   .badge-green   { @apply bg-emerald-50 text-emerald-700; }
@@ -137,7 +137,7 @@ h1, h2, h3, h4, h5 {
 
   /* Label */
   .field-label {
-    @apply block text-[11px] font-semibold uppercase tracking-[0.06em] text-zinc-400 mb-1.5;
+    @apply block text-[12px] font-semibold uppercase tracking-[0.06em] text-zinc-400 mb-1.5;
   }
 
   /* Stat card */
@@ -151,7 +151,7 @@ h1, h2, h3, h4, h5 {
   }
 
   .stat-label {
-    @apply text-[11px] font-semibold uppercase tracking-[0.08em] text-zinc-400;
+    @apply text-[12px] font-semibold uppercase tracking-[0.08em] text-zinc-400;
   }
 
   /* Modal overlay */
@@ -169,7 +169,7 @@ h1, h2, h3, h4, h5 {
 
   /* Table */
   .data-table thead th {
-    @apply px-4 py-3 text-[11px] font-semibold uppercase tracking-[0.06em] text-zinc-400 border-b border-[rgba(0,0,0,0.05)];
+    @apply px-4 py-3 text-[12px] font-semibold uppercase tracking-[0.06em] text-zinc-400 border-b border-[rgba(0,0,0,0.05)];
   }
 
   .data-table tbody td {

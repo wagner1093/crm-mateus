@@ -141,7 +141,7 @@ export function Sidebar() {
                 className="flex flex-col overflow-hidden whitespace-nowrap"
               >
                 <p className="text-white text-[13px] font-bold">Mateus Wagner</p>
-                <p className="text-zinc-500 text-[11px]">Administrador</p>
+                <p className="text-zinc-500 text-[12px]">Administrador</p>
               </motion.div>
             )}
           </AnimatePresence>

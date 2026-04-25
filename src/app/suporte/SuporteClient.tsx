@@ -26,11 +26,11 @@ export default function SuporteClient() {
           <p className="text-muted-foreground">Gerencie tickets e atendimento ao cliente.</p>
         </div>
         <div className="flex items-center gap-3">
-          <button className="btn-secondary flex items-center gap-2">
+          <button className="bg-white border border-gray-100 px-5 py-2.5 rounded-2xl text-sm font-bold text-gray-500 flex items-center gap-2 hover:bg-gray-50 transition-all shadow-sm">
             <Phone className="w-4 h-4" />
             <span>WhatsApp Central</span>
           </button>
-          <button className="btn-primary flex items-center gap-2">
+          <button className="bg-[#1C1C1E] text-white px-6 py-2.5 rounded-2xl text-sm font-bold flex items-center gap-2 hover:bg-black transition-all shadow-lg active:scale-95">
             <Plus className="w-4 h-4" />
             <span>Abrir Ticket</span>
           </button>
@@ -60,7 +60,11 @@ export default function SuporteClient() {
           <div className="flex items-center gap-4 bg-white/50 p-2 rounded-2xl border border-white/20">
             <div className="relative flex-1">
               <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
-              <input type="text" placeholder="Buscar ticket ou cliente..." className="w-full pl-9 pr-4 py-2 rounded-xl bg-white border-none text-sm focus:ring-2 focus:ring-primary/20 shadow-sm" />
+              <input 
+                type="text" 
+                placeholder="Buscar ticket ou cliente..." 
+                className="w-full pl-9 pr-4 py-2.5 rounded-xl bg-[#F8FAFC] border border-[#E2E8F0] text-sm font-dmsans focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all outline-none" 
+              />
             </div>
             <div className="flex gap-1 bg-gray-100/50 p-1 rounded-xl">
               {['Todos', 'Abertos', 'Fechados'].map(tab => (
