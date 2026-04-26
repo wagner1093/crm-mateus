@@ -7,6 +7,7 @@ import { X, Save, DollarSign, Calendar, Tag, FileText, ArrowDownCircle, ArrowUpC
 import { supabase } from '@/lib/supabase';
 import { toast } from 'react-hot-toast';
 import { cn } from '@/lib/utils';
+import { CurrencyInput } from '@/components/CurrencyInput';
 
 interface TransactionModalProps {
   isOpen: boolean;
@@ -164,14 +165,10 @@ export function TransactionModal({ isOpen, onClose, onSuccess, transaction }: Tr
                 <div>
                   <label className={lbl}>Valor (R$) *</label>
                   <div className="relative group">
-                    <input
-                      type="number"
-                      step="0.01"
-                      required
+                    <CurrencyInput
                       className={inI + " pl-14"}
-                      placeholder="0,00"
                       value={formData.valor}
-                      onChange={e => setFormData({...formData, valor: parseFloat(e.target.value)})}
+                      onChange={v => setFormData({...formData, valor: v})}
                     />
                     <DollarSign className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-300 group-focus-within:text-blue-500 transition-colors" />
                   </div>

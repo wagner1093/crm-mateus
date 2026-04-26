@@ -169,30 +169,28 @@ export default function DashboardPage() {
           { label: 'Entradas (Pagas)', value: financialStats.receitas, icon: TrendingUp, color: 'text-emerald-600', bg: 'bg-emerald-500/10', border: 'border-emerald-500/20', dot: 'bg-emerald-500' },
           { label: 'A Receber', value: financialStats.aReceber, icon: Clock, color: 'text-blue-600', bg: 'bg-blue-500/10', border: 'border-blue-500/20', dot: 'bg-blue-500' },
           { label: 'Despesas', value: financialStats.despesas, icon: TrendingDown, color: 'text-rose-600', bg: 'bg-rose-500/10', border: 'border-rose-500/20', dot: 'bg-rose-500' },
-          { label: 'Saldo Líquido', value: financialStats.saldo, icon: Wallet, color: 'text-violet-600', bg: 'bg-violet-500/10', border: 'border-violet-500/20', dot: 'bg-violet-500' },
+          { label: 'Saldo Líquido', value: financialStats.saldo, icon: Wallet, color: 'text-blue-600', bg: 'bg-blue-500/10', border: 'border-blue-500/20', dot: 'bg-blue-500' },
         ].map((item, i) => (
-          <div key={i} className="bg-white rounded-[32px] p-8 shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-100 relative overflow-hidden group hover:shadow-[0_8px_30px_rgb(0,0,0,0.08)] transition-all">
-            <div className={`absolute -top-16 -right-16 w-32 h-32 ${item.bg} rounded-full blur-2xl transition-transform group-hover:scale-150`} />
+          <div key={i} className="bg-white rounded-[24px] p-6 shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-100 relative overflow-hidden group hover:shadow-[0_8px_30px_rgb(0,0,0,0.08)] transition-all flex items-center gap-5">
+            <div className={`absolute -top-12 -right-12 w-24 h-24 ${item.bg} rounded-full blur-2xl transition-transform group-hover:scale-150`} />
             
-            <div className="relative z-10">
-              <div className="flex justify-between items-start mb-6">
-                <div className={`w-14 h-14 rounded-2xl ${item.bg} ${item.color} flex items-center justify-center border ${item.border}`}>
-                  <item.icon className="w-7 h-7" />
-                </div>
-                <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-gray-50 border border-gray-100">
-                  <div className={`w-1.5 h-1.5 rounded-full ${item.dot} animate-pulse`} />
-                  <span className="text-[10px] font-black uppercase tracking-widest text-gray-500">Hoje</span>
+            <div className={`w-14 h-14 rounded-2xl shrink-0 ${item.bg} ${item.color} flex items-center justify-center border ${item.border} relative z-10`}>
+              <item.icon className="w-6 h-6" />
+            </div>
+            
+            <div className="relative z-10 flex-1">
+              <div className="flex justify-between items-center mb-1">
+                <p className="text-[10px] font-black uppercase tracking-widest text-gray-400">{item.label}</p>
+                <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-gray-50 border border-gray-100">
+                  <div className={`w-1 h-1 rounded-full ${item.dot} animate-pulse`} />
+                  <span className="text-[8px] font-black uppercase tracking-widest text-gray-500">Hoje</span>
                 </div>
               </div>
-              
-              <div>
-                <p className="text-[12px] font-black uppercase tracking-widest text-gray-400 mb-2">{item.label}</p>
-                <div className="flex items-baseline gap-0.5">
-                  <span className="text-3xl font-bold tracking-tighter text-[#111118]">
-                    R$ {Math.floor(item.value).toLocaleString('pt-BR')}
-                  </span>
-                  <span className="text-sm font-bold text-gray-400">,{(item.value % 1).toFixed(2).split('.')[1] || '00'}</span>
-                </div>
+              <div className="flex items-baseline gap-0.5">
+                <span className="text-2xl font-bold tracking-tighter text-[#111118]">
+                  R$ {Math.floor(item.value).toLocaleString('pt-BR')}
+                </span>
+                <span className="text-sm font-bold text-gray-400">,{(item.value % 1).toFixed(2).split('.')[1] || '00'}</span>
               </div>
             </div>
           </div>

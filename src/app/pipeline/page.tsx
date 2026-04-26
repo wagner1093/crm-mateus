@@ -7,6 +7,8 @@ import { Plus, LayoutGrid, AlignJustify, SlidersHorizontal, Pencil, Trash2, X, C
 import { cn } from '@/lib/utils';
 import { LeadModal } from '@/components/LeadModal';
 import { ConfirmModal } from '@/components/ConfirmModal';
+import { PhoneInput } from '@/components/PhoneInput';
+import { CurrencyInput } from '@/components/CurrencyInput';
 import { supabase } from '@/lib/supabase';
 import {
   DndContext, DragEndEvent, DragOverEvent, DragStartEvent,
@@ -274,30 +276,10 @@ function EditModal({ lead, onClose, onSave, availableServices }: {
   });
   const [selectedServices, setSelectedServices] = useState<string[]>(lead.servico_interesse ?? []);
   const [saving, setSaving] = useState(false);
-  const [displayValue, setDisplayValue] = useState(lead.valor_estimado ? `R$ ${lead.valor_estimado.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : '');
 
   const toggleService = (s: string) => setSelectedServices(p => p.includes(s) ? p.filter(x => x !== s) : [...p, s]);
 
-  const handlePhoneInput = (val: string) => {
-    const raw = val.replace(/\D/g, '');
-    let formatted = raw;
-    if (raw.length > 2) {
-      formatted = `(${raw.slice(0, 2)}) `;
-      if (raw.length > 7) {
-        formatted += `${raw.slice(2, 7)}-${raw.slice(7, 11)}`;
-      } else {
-        formatted += raw.slice(2, 11);
-      }
-    }
-    setFormData({ ...formData, whatsapp: formatted });
-  };
 
-  const handleCurrencyInput = (val: string) => {
-    const raw = val.replace(/\D/g, '');
-    const num = parseInt(raw || '0', 10) / 100;
-    setFormData({ ...formData, valor_estimado: num });
-    setDisplayValue(num > 0 ? `R$ ${num.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : '');
-  };
 
   const save = async () => {
     setSaving(true);
@@ -394,7 +376,7 @@ function EditModal({ lead, onClose, onSave, availableServices }: {
               <div>
                 <label className={lbl}>WhatsApp</label>
                 <div className="relative group">
-                  <input className={inI + " pl-14"} placeholder="(00) 00000-0000" value={formData.whatsapp || ''} onChange={e => handlePhoneInput(e.target.value)} maxLength={15} />
+                  <PhoneInput className={inI + " pl-14"} value={formData.whatsapp || ''} onChange={v => setFormData({...formData, whatsapp: v})} />
                   <Phone className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 group-focus-within:text-[#007AFF] transition-colors" />
                 </div>
               </div>
@@ -455,7 +437,7 @@ function EditModal({ lead, onClose, onSave, availableServices }: {
               <div>
                 <label className={lbl}>Valor Estimado (R$)</label>
                 <div className="relative group">
-                  <input type="text" className={inI + " pl-14"} placeholder="R$ 0,00" value={displayValue} onChange={e => handleCurrencyInput(e.target.value)} />
+                  <CurrencyInput className={inI + " pl-14"} value={formData.valor_estimado} onChange={v => setFormData({...formData, valor_estimado: v})} />
                   <DollarSign className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 group-focus-within:text-[#007AFF] transition-colors" />
                 </div>
               </div>
@@ -624,6 +606,78 @@ export default function PipelinePage() {
     try {
       const { error } = await supabase.from('crmmateus_leads').update({ etapa: dest }).eq('id', lead.id);
       if (error) throw error;
+      
+      // -- Automação: Transformar em Cliente, Contrato e Lançar no Financeiro ao Ganhar --
+      if (dest === 'Fechado') {
+        const loadingToast = toast.loading('Processando automação...');
+        try {
+          // Guard: verificar se já existe cliente com o mesmo nome (evitar duplicatas)
+          const { data: existing, error: searchErr } = await supabase
+            .from('crmmateus_clientes')
+            .select('id')
+            .ilike('nome', lead.nome)
+            .limit(1);
+
+          if (searchErr) { toast.error(`[1] Erro busca cliente: ${searchErr.message}`, { id: loadingToast }); return; }
+
+          let clientId: string | null = existing && existing.length > 0 ? existing[0].id : null;
+
+          if (!clientId) {
+            // 1. Criar novo Cliente a partir do Lead
+            const { data: newClient, error: clientError } = await supabase.from('crmmateus_clientes').insert({
+              nome: lead.nome,
+              tipo: 'PF',
+              whatsapp: lead.contato || null,
+              status: 'Ativo',
+              valor_recorrente: lead.valor_estimado || 0,
+              servicos_contratados: lead.servico_interesse || [],
+            }).select('id').single();
+
+            if (clientError) { toast.error(`[2] Erro criar cliente: ${clientError.message}`, { id: loadingToast }); return; }
+            clientId = newClient?.id ?? null;
+          }
+
+          if (clientId) {
+            // 2. Gerar rascunho de "Contrato"
+            const { error: contratoError } = await supabase.from('crmmateus_contratos').insert({
+              titulo: `Contrato - ${lead.nome}`,
+              cliente_id: clientId,
+              cliente_nome: lead.nome,
+              servicos: lead.servico_interesse || [],
+              valor: lead.valor_estimado || 0,
+              data_inicio: new Date().toISOString().split('T')[0],
+              status: 'Aguardando',
+            });
+
+            if (contratoError) { toast.error(`[3] Erro contrato: ${contratoError.message}`, { id: loadingToast }); return; }
+
+            // 3. Lançar no financeiro como receita pendente
+            const { error: finError } = await supabase.from('crmmateus_financeiro').insert({
+              tipo: 'receita',
+              descricao: `Projeto Fechado: ${lead.nome}`,
+              valor: lead.valor_estimado || 0,
+              status: 'pendente',
+              data_vencimento: new Date().toISOString().split('T')[0],
+              cliente_id: clientId,
+              categoria: 'Vendas',
+            });
+
+            if (finError) { toast.error(`[4] Erro financeiro: ${finError.message}`, { id: loadingToast }); return; }
+          }
+
+          const wasExisting = existing && existing.length > 0;
+          toast.success(
+            wasExisting
+              ? 'Contrato e entrada financeira gerados para o cliente existente!'
+              : '✅ Lead convertido! Cliente, Contrato e Financeiro gerados.',
+            { id: loadingToast }
+          );
+        } catch (autoErr: any) {
+          console.error('Erro na automação:', autoErr);
+          toast.error(`Erro automação: ${autoErr?.message ?? 'desconhecido'}`, { id: loadingToast });
+        }
+      }
+
     } catch { toast.error('Erro ao mover lead.'); fetchLeads(); }
   };
 

@@ -7,6 +7,7 @@ import { X, Send, User, Briefcase, DollarSign, Calendar, Check, Clock, AlertCirc
 import { cn } from '@/lib/utils';
 import { supabase } from '@/lib/supabase';
 import { toast } from 'react-hot-toast';
+import { CurrencyInput } from '@/components/CurrencyInput';
 
 interface ProposalModalProps {
   isOpen: boolean;
@@ -202,14 +203,10 @@ export function ProposalModal({ isOpen, onClose, onSuccess, proposal }: Proposal
                 {/* Valor */}
                 <div>
                   <label className={lbl}>Valor (R$)</label>
-                  <input
-                    type="number"
-                    step="0.01"
-                    required
+                  <CurrencyInput
                     className={inI}
-                    placeholder="0,00"
                     value={formData.valor}
-                    onChange={e => setFormData({...formData, valor: parseFloat(e.target.value)})}
+                    onChange={v => setFormData({...formData, valor: v})}
                   />
                 </div>
 

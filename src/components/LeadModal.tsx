@@ -6,6 +6,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { X, UserPlus, Plus, User, Briefcase, Mail, Phone, DollarSign, MessageSquare, Save, Snowflake, Thermometer, Flame } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { toast } from 'react-hot-toast';
+import { CurrencyInput } from '@/components/CurrencyInput';
+import { PhoneInput } from '@/components/PhoneInput';
 
 interface LeadModalProps {
   isOpen: boolean;
@@ -79,26 +81,9 @@ export function LeadModal({ isOpen, onClose, onSuccess }: LeadModalProps) {
     }
   };
 
-  const handlePhoneInput = (val: string) => {
-    const raw = val.replace(/\D/g, '');
-    let formatted = raw;
-    if (raw.length > 2) {
-      formatted = `(${raw.slice(0, 2)}) `;
-      if (raw.length > 7) {
-        formatted += `${raw.slice(2, 7)}-${raw.slice(7, 11)}`;
-      } else {
-        formatted += raw.slice(2, 11);
-      }
-    }
-    setFormData({ ...formData, contato: formatted });
-  };
 
-  const handleCurrencyInput = (val: string) => {
-    const raw = val.replace(/\D/g, '');
-    const num = parseInt(raw || '0', 10) / 100;
-    setFormData({ ...formData, valor_estimado: num });
-    setDisplayValue(num > 0 ? `R$ ${num.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : '');
-  };
+
+
 
   const lbl = "text-[13px] font-bold text-[#64748B] mb-2 block font-dmsans uppercase tracking-wide";
   const inI = "w-full bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl px-4 py-3 text-[14px] text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all font-dmsans placeholder:text-gray-400";
@@ -181,14 +166,10 @@ export function LeadModal({ isOpen, onClose, onSuccess }: LeadModalProps) {
                 <div>
                   <label className={lbl}>Contato (WhatsApp) *</label>
                   <div className="relative group">
-                    <input
-                      required
-                      type="text"
+                    <PhoneInput
                       className={inI + " pl-14"}
-                      placeholder="(00) 00000-0000"
                       value={formData.contato}
-                      onChange={e => handlePhoneInput(e.target.value)}
-                      maxLength={15}
+                      onChange={v => setFormData({...formData, contato: v})}
                     />
                     <Phone className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 group-focus-within:text-[#007AFF] transition-colors" />
                   </div>
@@ -219,12 +200,10 @@ export function LeadModal({ isOpen, onClose, onSuccess }: LeadModalProps) {
                 <div className="md:col-span-2">
                   <label className={lbl}>Valor Estimado (R$)</label>
                   <div className="relative group">
-                    <input
-                      type="text"
+                    <CurrencyInput
                       className={inI + " pl-14"}
-                      placeholder="R$ 0,00"
-                      value={displayValue}
-                      onChange={e => handleCurrencyInput(e.target.value)}
+                      value={formData.valor_estimado}
+                      onChange={v => setFormData({...formData, valor_estimado: v})}
                     />
                     <DollarSign className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 group-focus-within:text-[#007AFF] transition-colors" />
                   </div>

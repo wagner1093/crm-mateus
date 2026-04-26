@@ -1,14 +1,17 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import {
   User, Building2, Bell, Shield, Smartphone, Globe,
-  Save, AlertCircle, Terminal, Database, CheckCircle2, UserPlus
+  Save, AlertCircle, Terminal, Database, CheckCircle2, UserPlus,
+  Pencil, X, Check, Trash2
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { toast } from 'react-hot-toast';
 import { supabase } from '@/lib/supabase';
+import { PhoneInput } from '@/components/PhoneInput';
+import { DocumentInput } from '@/components/DocumentInput';
 
 const sections = [
   { id: 'geral', label: 'Geral', desc: 'Perfil e empresa', icon: Building2 },
@@ -17,8 +20,42 @@ const sections = [
   { id: 'equipe', label: 'Equipe', desc: 'Membros do time', icon: User },
 ];
 
+type TeamMember = { id: string; name: string; role: string; email: string; status: string; permissions: string; access_level: string; };
+
 export default function ConfigPage() {
   const [activeSection, setActiveSection] = useState('geral');
+  const [members, setMembers] = useState<TeamMember[]>([]);
+  const [editingMember, setEditingMember] = useState<TeamMember | null>(null);
+  const [editForm, setEditForm] = useState<Partial<TeamMember>>({});
+  const [savingMember, setSavingMember] = useState(false);
+  const [showNewModal, setShowNewModal] = useState(false);
+  const [newForm, setNewForm] = useState({ name: '', email: '', role: '', access_level: 'Administrador Global', status: 'Ativo' });
+  const [savingNew, setSavingNew] = useState(false);
+
+  useEffect(() => { if (activeSection === 'equipe') fetchMembers(); }, [activeSection]);
+
+  const fetchMembers = async () => {
+    const { data } = await supabase.from('crmmateus_equipe').select('*').order('created_at');
+    setMembers(data || []);
+  };
+
+  const openEdit = (m: TeamMember) => { setEditingMember(m); setEditForm({ name: m.name, role: m.role, email: m.email, access_level: m.access_level, status: m.status }); };
+
+  const handleSaveMember = async () => {
+    if (!editingMember) return;
+    setSavingMember(true);
+    const { error } = await supabase.from('crmmateus_equipe').update(editForm).eq('id', editingMember.id);
+    if (error) { toast.error('Erro ao salvar.'); } else { toast.success('Membro atualizado!'); fetchMembers(); setEditingMember(null); }
+    setSavingMember(false);
+  };
+
+  const handleCreateMember = async () => {
+    if (!newForm.name || !newForm.email) { toast.error('Nome e e-mail são obrigatórios.'); return; }
+    setSavingNew(true);
+    const { error } = await supabase.from('crmmateus_equipe').insert(newForm);
+    if (error) { toast.error('Erro ao criar membro: ' + error.message); } else { toast.success('Membro adicionado!'); fetchMembers(); setShowNewModal(false); setNewForm({ name: '', email: '', role: '', access_level: 'Administrador Global', status: 'Ativo' }); }
+    setSavingNew(false);
+  };
   const [isSaving, setIsSaving] = useState(false);
   const [loading, setLoading] = useState(true);
 
@@ -202,7 +239,17 @@ export default function ConfigPage() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                   <Field icon={User} label="Nome do usuário" placeholder="Ex: João Silva" value={formData.user_name} onChange={(e: any) => setFormData({ ...formData, user_name: e.target.value })} />
                   <Field icon={Globe} label="E-mail corporativo" placeholder="Ex: joao@empresa.com" value={formData.email_corporativo} onChange={(e: any) => setFormData({ ...formData, email_corporativo: e.target.value })} />
-                  <Field icon={Smartphone} label="Telefone / WhatsApp" placeholder="(11) 99999-9999" value={formData.phone} onChange={(e: any) => setFormData({ ...formData, phone: e.target.value })} />
+                  <div>
+                    <label className="block text-[13px] font-black uppercase tracking-widest text-gray-400 mb-2">Telefone / WhatsApp</label>
+                    <div className="relative">
+                      <Smartphone className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                      <PhoneInput
+                        className={cn("w-full bg-gray-50 border border-gray-200 rounded-2xl py-3.5 pl-11 pr-4 text-base font-medium text-[#111118] placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-[#1d7cf9]/20 focus:border-[#1d7cf9] transition-all")}
+                        value={formData.phone}
+                        onChange={v => setFormData({ ...formData, phone: v })}
+                      />
+                    </div>
+                  </div>
                   <Field icon={Shield} label="Função" value={formData.role} disabled />
                 </div>
               </Card>
@@ -212,7 +259,18 @@ export default function ConfigPage() {
                 <SectionHeader icon={Building2} label="Informações da Empresa" sub="Dados cadastrais do seu negócio" />
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                   <Field icon={Building2} label="Nome / Razão Social" placeholder="Ex: Tech Solutions Ltda" value={formData.nome_empresa} onChange={(e: any) => setFormData({ ...formData, nome_empresa: e.target.value })} />
-                  <Field icon={Shield} label="CNPJ / Documento" placeholder="00.000.000/0001-00" value={formData.cnpj} onChange={(e: any) => setFormData({ ...formData, cnpj: e.target.value })} />
+                  <div>
+                    <label className="block text-[13px] font-black uppercase tracking-widest text-gray-400 mb-2">CNPJ / Documento</label>
+                    <div className="relative">
+                      <Shield className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                      <DocumentInput
+                        type="CNPJ"
+                        className={cn("w-full bg-gray-50 border border-gray-200 rounded-2xl py-3.5 pl-11 pr-4 text-base font-medium text-[#111118] placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-[#1d7cf9]/20 focus:border-[#1d7cf9] transition-all")}
+                        value={formData.cnpj}
+                        onChange={v => setFormData({ ...formData, cnpj: v })}
+                      />
+                    </div>
+                  </div>
                   <div className="md:col-span-2">
                     <Field icon={Globe} label="Endereço completo" placeholder="Ex: Rua Exemplo, 123 — Centro" value={formData.address} onChange={(e: any) => setFormData({ ...formData, address: e.target.value })} />
                   </div>
@@ -390,7 +448,7 @@ export default function ConfigPage() {
                     <h3 className="text-xl font-bold text-[#111118] tracking-tight">Gestão de Equipe</h3>
                     <p className="text-sm font-medium text-gray-500 mt-1">Administre acessos e funções dos membros</p>
                   </div>
-                  <button className="bg-[#1C1C1E] text-white px-6 py-3 rounded-2xl text-sm font-bold flex items-center gap-2 hover:bg-black transition-all active:scale-95">
+                  <button onClick={() => setShowNewModal(true)} className="bg-[#1C1C1E] text-white px-6 py-3 rounded-2xl text-sm font-bold flex items-center gap-2 hover:bg-black transition-all active:scale-95">
                     <UserPlus className="w-4 h-4" />
                     Novo Membro
                   </button>
@@ -403,19 +461,19 @@ export default function ConfigPage() {
                     <tr className="border-b border-gray-100 bg-gray-50/60">
                       <th className="px-8 py-5 text-[13px] font-black uppercase tracking-widest text-gray-400">Membro do Time</th>
                       <th className="px-8 py-5 text-[13px] font-black uppercase tracking-widest text-gray-400">Nível de Acesso</th>
+                      <th className="px-8 py-5 text-[13px] font-black uppercase tracking-widest text-gray-400">Status</th>
                       <th className="px-8 py-5 text-[13px] font-black uppercase tracking-widest text-gray-400 text-right">Ações</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-50">
-                    {[
-                      { name: 'Eliezer', role: 'Administrador Global', initial: 'E', email: 'eliezer@mateus.com' },
-                      { name: 'Zeca', role: 'Administrador Global', initial: 'Z', email: 'zeca@mateus.com' },
-                    ].map((m, i) => (
-                      <tr key={i} className="group hover:bg-gray-50/40 transition-colors">
+                    {members.length === 0 ? (
+                      <tr><td colSpan={4} className="px-8 py-12 text-center text-sm font-medium text-gray-400">Nenhum membro cadastrado.</td></tr>
+                    ) : members.map((m) => (
+                      <tr key={m.id} className="group hover:bg-gray-50/40 transition-colors">
                         <td className="px-8 py-5">
                           <div className="flex items-center gap-4">
                             <div className="w-10 h-10 rounded-2xl bg-blue-50 border border-blue-100 flex items-center justify-center text-[#1d7cf9] text-sm font-black">
-                              {m.initial}
+                              {m.name?.charAt(0)?.toUpperCase()}
                             </div>
                             <div>
                               <p className="text-sm font-bold text-[#111118]">{m.name}</p>
@@ -424,22 +482,158 @@ export default function ConfigPage() {
                           </div>
                         </td>
                         <td className="px-8 py-5">
-                          <span className="inline-flex items-center px-3 py-1.5 rounded-xl text-[13px] font-black uppercase tracking-widest bg-gray-100 text-gray-500 border border-gray-200">
-                            {m.role}
+                          <span className="inline-flex items-center px-2.5 py-1 rounded-lg text-[11px] font-bold uppercase tracking-wider bg-gray-100 text-gray-500 border border-gray-200">
+                            {m.access_level || m.role || '—'}
+                          </span>
+                        </td>
+                        <td className="px-8 py-5">
+                          <span className={cn(
+                            "inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-bold uppercase tracking-wider border",
+                            m.status === 'Ativo' ? "bg-emerald-50 text-emerald-600 border-emerald-100" : "bg-gray-100 text-gray-400 border-gray-200"
+                          )}>
+                            <span className={cn("w-1.5 h-1.5 rounded-full shrink-0", m.status === 'Ativo' ? "bg-emerald-500" : "bg-gray-400")} />
+                            {m.status || 'Ativo'}
                           </span>
                         </td>
                         <td className="px-8 py-5 text-right">
-                          <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                            <button className="p-2 rounded-xl hover:bg-blue-50 text-gray-400 hover:text-[#1d7cf9] transition-colors"><Smartphone className="w-4 h-4" /></button>
-                            <button className="p-2 rounded-xl hover:bg-indigo-50 text-gray-400 hover:text-indigo-600 transition-colors"><Database className="w-4 h-4" /></button>
-                            <button className="p-2 rounded-xl hover:bg-red-50 text-gray-400 hover:text-red-500 transition-colors"><Shield className="w-4 h-4" /></button>
-                          </div>
+                          <button
+                            onClick={() => openEdit(m)}
+                            className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-gray-50 border border-gray-200 text-gray-500 hover:bg-blue-50 hover:text-[#1d7cf9] hover:border-blue-100 transition-all text-xs font-bold"
+                          >
+                            <Pencil className="w-3.5 h-3.5" />
+                            Editar
+                          </button>
                         </td>
                       </tr>
                     ))}
                   </tbody>
                 </table>
               </Card>
+
+              {/* Edit Modal */}
+              <AnimatePresence>
+                {editingMember && (
+                  <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4">
+                    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setEditingMember(null)} className="fixed inset-0 bg-black/50 backdrop-blur-sm" />
+                    <motion.div initial={{ opacity: 0, scale: 0.95, y: 16 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95 }} className="relative w-full max-w-md bg-white rounded-[28px] shadow-2xl z-[10000] overflow-hidden">
+                      <div className="px-8 py-6 border-b border-gray-100 flex items-center justify-between">
+                        <div>
+                          <h3 className="text-lg font-bold text-[#111118]">Editar Membro</h3>
+                          <p className="text-xs text-gray-400 mt-0.5">Atualize os dados do membro da equipe</p>
+                        </div>
+                        <button onClick={() => setEditingMember(null)} className="w-9 h-9 rounded-xl bg-gray-50 flex items-center justify-center text-gray-400 hover:bg-gray-100 transition-all">
+                          <X className="w-4 h-4" />
+                        </button>
+                      </div>
+                      <div className="p-8 space-y-4">
+                        {[
+                          { label: 'Nome', key: 'name', placeholder: 'Ex: João Silva' },
+                          { label: 'E-mail', key: 'email', placeholder: 'joao@empresa.com' },
+                          { label: 'Cargo / Função', key: 'role', placeholder: 'Ex: Vendedor' },
+                        ].map(({ label, key, placeholder }) => (
+                          <div key={key}>
+                            <label className="block text-[12px] font-black uppercase tracking-widest text-gray-400 mb-2">{label}</label>
+                            <input
+                              className="w-full bg-gray-50 border border-gray-200 rounded-2xl px-4 py-3 text-sm font-medium text-[#111118] placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-[#1d7cf9]/20 focus:border-[#1d7cf9] transition-all"
+                              placeholder={placeholder}
+                              value={(editForm as any)[key] || ''}
+                              onChange={e => setEditForm({ ...editForm, [key]: e.target.value })}
+                            />
+                          </div>
+                        ))}
+                        <div>
+                          <label className="block text-[12px] font-black uppercase tracking-widest text-gray-400 mb-2">Nível de Acesso</label>
+                          <select
+                            className="w-full bg-gray-50 border border-gray-200 rounded-2xl px-4 py-3 text-sm font-medium text-[#111118] focus:outline-none focus:ring-2 focus:ring-[#1d7cf9]/20 focus:border-[#1d7cf9] transition-all appearance-none"
+                            value={editForm.access_level || ''}
+                            onChange={e => setEditForm({ ...editForm, access_level: e.target.value })}
+                          >
+                            <option value="">Selecione...</option>
+                            <option value="Administrador Global">Administrador Global</option>
+                            <option value="Financeiro">Financeiro</option>
+                            <option value="Vendedor">Vendedor</option>
+                            <option value="Visualizador">Visualizador</option>
+                          </select>
+                        </div>
+                        <div>
+                          <label className="block text-[12px] font-black uppercase tracking-widest text-gray-400 mb-2">Status</label>
+                          <select
+                            className="w-full bg-gray-50 border border-gray-200 rounded-2xl px-4 py-3 text-sm font-medium text-[#111118] focus:outline-none focus:ring-2 focus:ring-[#1d7cf9]/20 focus:border-[#1d7cf9] transition-all appearance-none"
+                            value={editForm.status || 'Ativo'}
+                            onChange={e => setEditForm({ ...editForm, status: e.target.value })}
+                          >
+                            <option value="Ativo">Ativo</option>
+                            <option value="Inativo">Inativo</option>
+                          </select>
+                        </div>
+                      </div>
+                      <div className="px-8 pb-8 flex gap-3">
+                        <button onClick={() => setEditingMember(null)} className="flex-1 py-3 rounded-2xl border border-gray-200 text-sm font-bold text-gray-500 hover:bg-gray-50 transition-all">
+                          Cancelar
+                        </button>
+                        <button onClick={handleSaveMember} disabled={savingMember} className="flex-[2] py-3 rounded-2xl bg-[#1C1C1E] text-white text-sm font-bold flex items-center justify-center gap-2 hover:bg-black transition-all disabled:opacity-50">
+                          {savingMember ? <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : <><Check className="w-4 h-4" />Salvar Alterações</>}
+                        </button>
+                      </div>
+                    </motion.div>
+                  </div>
+                )}
+              </AnimatePresence>
+
+              {/* New Member Modal */}
+              <AnimatePresence>
+                {showNewModal && (
+                  <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4">
+                    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setShowNewModal(false)} className="fixed inset-0 bg-black/50 backdrop-blur-sm" />
+                    <motion.div initial={{ opacity: 0, scale: 0.95, y: 16 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95 }} className="relative w-full max-w-md bg-white rounded-[28px] shadow-2xl z-[10000] overflow-hidden">
+                      <div className="px-8 py-6 border-b border-gray-100 flex items-center justify-between">
+                        <div>
+                          <h3 className="text-lg font-bold text-[#111118]">Novo Membro</h3>
+                          <p className="text-xs text-gray-400 mt-0.5">Adicione um novo membro à equipe</p>
+                        </div>
+                        <button onClick={() => setShowNewModal(false)} className="w-9 h-9 rounded-xl bg-gray-50 flex items-center justify-center text-gray-400 hover:bg-gray-100 transition-all">
+                          <X className="w-4 h-4" />
+                        </button>
+                      </div>
+                      <div className="p-8 space-y-4">
+                        {[
+                          { label: 'Nome *', key: 'name', placeholder: 'Ex: João Silva' },
+                          { label: 'E-mail *', key: 'email', placeholder: 'joao@empresa.com' },
+                          { label: 'Cargo / Função', key: 'role', placeholder: 'Ex: Vendedor' },
+                        ].map(({ label, key, placeholder }) => (
+                          <div key={key}>
+                            <label className="block text-[12px] font-black uppercase tracking-widest text-gray-400 mb-2">{label}</label>
+                            <input
+                              className="w-full bg-gray-50 border border-gray-200 rounded-2xl px-4 py-3 text-sm font-medium text-[#111118] placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-[#1d7cf9]/20 focus:border-[#1d7cf9] transition-all"
+                              placeholder={placeholder}
+                              value={(newForm as any)[key]}
+                              onChange={e => setNewForm({ ...newForm, [key]: e.target.value })}
+                            />
+                          </div>
+                        ))}
+                        <div>
+                          <label className="block text-[12px] font-black uppercase tracking-widest text-gray-400 mb-2">Nível de Acesso</label>
+                          <select className="w-full bg-gray-50 border border-gray-200 rounded-2xl px-4 py-3 text-sm font-medium text-[#111118] focus:outline-none focus:ring-2 focus:ring-[#1d7cf9]/20 focus:border-[#1d7cf9] transition-all appearance-none"
+                            value={newForm.access_level} onChange={e => setNewForm({ ...newForm, access_level: e.target.value })}>
+                            <option value="Administrador Global">Administrador Global</option>
+                            <option value="Financeiro">Financeiro</option>
+                            <option value="Vendedor">Vendedor</option>
+                            <option value="Visualizador">Visualizador</option>
+                          </select>
+                        </div>
+                      </div>
+                      <div className="px-8 pb-8 flex gap-3">
+                        <button onClick={() => setShowNewModal(false)} className="flex-1 py-3 rounded-2xl border border-gray-200 text-sm font-bold text-gray-500 hover:bg-gray-50 transition-all">
+                          Cancelar
+                        </button>
+                        <button onClick={handleCreateMember} disabled={savingNew} className="flex-[2] py-3 rounded-2xl bg-[#1C1C1E] text-white text-sm font-bold flex items-center justify-center gap-2 hover:bg-black transition-all disabled:opacity-50">
+                          {savingNew ? <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : <><UserPlus className="w-4 h-4" />Adicionar Membro</>}
+                        </button>
+                      </div>
+                    </motion.div>
+                  </div>
+                )}
+              </AnimatePresence>
             </>
           )}
         </motion.div>

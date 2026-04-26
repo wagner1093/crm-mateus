@@ -30,7 +30,6 @@ const menuItems = [
   { icon: Briefcase, label: 'Serviços', href: '/servicos' },
   { icon: DollarSign, label: 'Financeiro', href: '/financeiro' },
   { icon: UserCheck, label: 'Clientes', href: '/clientes' },
-  { icon: UserPlus2, label: 'Equipe', href: '/equipe' },
   { icon: ClipboardList, label: 'Contratos', href: '/contratos' },
   { icon: Settings, label: 'Configurações', href: '/configuracoes' },
 ];
